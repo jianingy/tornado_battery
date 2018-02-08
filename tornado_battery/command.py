@@ -56,6 +56,12 @@ DEFAULT_LOGGING_CONFIG = {
 
 class CommandMixin:
 
+    def bail(self, future, io_loop):
+        io_loop.stop()
+        exc = future.exception()
+        if exc:
+            raise exc
+
     def enable_logging(self):
         if options.debug:
             level = 'DEBUG'
