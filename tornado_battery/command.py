@@ -14,6 +14,7 @@ from tornado.options import parse_config_file
 import logging
 import tornado
 
+
 define("debug", group="main", default=False, help="enable debug")
 define("config", help="path to config file", group='main',
        callback=lambda path: parse_config_file(path, final=False))

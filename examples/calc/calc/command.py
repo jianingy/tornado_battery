@@ -8,6 +8,7 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @  8 Feb, 2018
 #
+from tornado_battery import disable_tornado_logging_options  # noqa
 from tornado_battery.command import CommandMixin
 from tornado_battery.route import route
 from tornado_battery.controller import JSONController
