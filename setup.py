@@ -11,7 +11,7 @@
 from setuptools import setup
 
 package = 'tornado_battery'
-version = '0.1.0'
+version = '0.1.1'
 
 setup(name=package,
       version=version,
