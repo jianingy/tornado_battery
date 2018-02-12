@@ -39,13 +39,6 @@ class RedisConnector:
     def __init__(self, name):
         self.name = name
 
-    def setup(self, uri, **kwargs):
-        r = urlparse(uri)
-        if r.scheme.lower() != 'redis':
-            raise RedisConnector('%s is not a redis connection scheme' % uri)
-        self._connection_string = uri
-        self._num_connections = kwargs['num_connections']
-
     def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
             raise RedisConnectorError("no connection found")
