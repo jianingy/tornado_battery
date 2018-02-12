@@ -10,11 +10,14 @@
 #
 from setuptools import setup
 
-package = 'tornado_battery'
-version = '0.1.1'
+package = 'greetings'
+version = '0.1.0'
 
 setup(name=package,
       version=version,
-      description="a set of utilities help write tornado apps quickly and easily",
-      url='http://localhost',
-      install_requires=['tornado>=4.5.3', 'ujson>=1.3.5', 'momoko>=2.2.4'])
+      description="a simple greeting api",
+      url='https://github.com/jianingy/tornado_battery',
+      entry_points={
+          'console_scripts': ['greeting-server=greetings.command:start_server'],
+      },
+      install_requires=['tornado_battery'])

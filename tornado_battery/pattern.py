@@ -17,7 +17,6 @@ LOG = logging.getLogger("tornado.application")
 class SingletonMixin(object):
 
     __instance_lock = threading.Lock()
-    __instance = None
 
     @classmethod
     def instance(cls):

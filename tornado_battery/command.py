@@ -70,6 +70,9 @@ class CommandMixin:
             logger = logging.getLogger()
             logger.setLevel(getattr(logging, level))
 
+    def setup(self, io_loop):
+        pass
+
     def before_run(self, io_loop):
         pass
 
@@ -77,6 +80,7 @@ class CommandMixin:
         from tornado.options import parse_command_line
 
         io_loop = tornado.ioloop.IOLoop.current()
+        self.setup(io_loop)
         parse_command_line()
         self.enable_logging()
         self.before_run(io_loop)
