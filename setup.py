@@ -16,7 +16,7 @@ version = '0.2.0'
 setup(name=package,
       version=version,
       description="a set of utilities help write tornado apps quickly and easily",
-      url='http://localhost',
+      url='https://github.com/jianingy/tornado_battery',
       install_requires=['tornado>=4.5.3',
                         'ujson>=1.3.5',
                         'colorlog>=3.1.2',
