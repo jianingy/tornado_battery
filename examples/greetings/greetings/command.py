@@ -33,15 +33,15 @@ class DBMixin:
 class AddController(JSONController, DBMixin):
 
     async def get(self):
-        db = await self.slave_db()
-        cursor = await db.execute("SELECT quote FROM quotes ORDER BY RANDOM()")
-        row = cursor.fetchone()
+        with (await self.slave_db()) as db:
+            cursor = await db.execute("SELECT quote FROM quotes ORDER BY RANDOM()")
+            row = cursor.fetchone()
         self.reply(quote=row[0])
 
     async def post(self):
-        db = await self.master_db()
-        await db.execute("INSERT INTO quotes(quote) VALUES(%(quote)s)",
-                         dict(quote=self.data["quote"]))
+        with (await self.master_db()) as db:
+            await db.execute("INSERT INTO quotes(quote) VALUES(%(quote)s)",
+                             dict(quote=self.data["quote"]))
         self.reply(status="OK")
 
 

@@ -50,7 +50,10 @@ class PostgresConnector:
     def __init__(self, name):
         self.name = name
 
-    def setup(self, uri, **kwargs):
+    def setup_options(self):
+        name = self.name
+        opts = options.group_dict('%s database' % name)
+        uri = opts[option_name(name, "uri")]
         r = urlparse(uri)
         if r.scheme.lower() != 'postgres':
             raise PostgresConnectorError('%s is not a postgres connection scheme' % uri)
@@ -61,30 +64,26 @@ class PostgresConnector:
                          pw=r.password,
                          db=r.path.lstrip('/') or r.username)
         self._connection_string = dsn
-        self._reconnect_interval = kwargs.get('reconnect_interval', 5)
-        self._pool_size = kwargs.get('max_pool_size', 4)
+        self._reconnect_interval = opts[option_name(name, "reconnect-interval")]
+        self._num_connections = opts[option_name(name, "num-connections")]
 
     async def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
             await self.connect()
-        return self._connections
+        new = await self._connections.getconn()
+        return self._connections.manage(new)
 
     async def connect(self):
-        name = self.name
-        opts = options.group_dict('%s database' % name)
-        connection_string = opts[option_name(name, "uri")]
-        LOG.info('connecting postgresql %s' % connection_string)
+        self.setup_options()
+        LOG.info('connecting postgresql %s' % self._connection_string)
         self._connections = momoko.Pool(
-            dsn=connection_string,
-            reconnect_interval=opts[option_name(name, "reconnect-interval")],
-            size=opts[option_name(name, "max-pool-size")],
+            dsn=self._connection_string,
+            reconnect_interval=self._reconnect_interval,
+            size=int(self._num_connections[0]),
+            max_size=int(self._num_connections[-1]),
             ioloop=tornado.ioloop.IOLoop.instance(),
         )
         await self._connections.connect()
-
-    def disconnect(self):
-        self._connections.close()
-        delattr(self._connections)
 
 
 def option_name(instance, option):
@@ -99,8 +98,8 @@ def register_postgres_options(instance='master', default_uri='postgres:///'):
            default=default_uri,
            group='%s database' % instance,
            help="postgresql connection uri for %s" % instance)
-    define(option_name(instance, 'max-pool-size'),
-           default=4,
+    define(option_name(instance, 'num-connections'), multiple=True,
+           default=[1, 2],
            group='%s database' % instance,
            help='connection pool size for %s ' % instance)
     define(option_name(instance, 'reconnect-interval'),
