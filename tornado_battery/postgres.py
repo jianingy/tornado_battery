@@ -53,7 +53,7 @@ class PostgresConnector:
     def setup(self, uri, **kwargs):
         r = urlparse(uri)
         if r.scheme.lower() != 'postgres':
-            raise PostgresConnectorError('not a postgres connection scheme')
+            raise PostgresConnectorError('%s is not a postgres connection scheme' % uri)
         fmt = ('host={host} port={port} dbname={db} user={user} password={pw}')
         dsn = fmt.format(host=r.hostname or 'localhost',
                          port=r.port or 5432,
