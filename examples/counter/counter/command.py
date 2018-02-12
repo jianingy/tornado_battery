@@ -22,10 +22,10 @@ LOG = logging.getLogger("app.biz")
 
 class RedisMixin:
 
-    def master_redis(self):
+    def master_connection(self):
         return RedisConnector.instance("master").connection()
 
-    def slave_redis(self):
+    def slave_connection(self):
         return RedisConnector.instance("slave").connection()
 
 
@@ -34,13 +34,13 @@ class AddController(JSONController, RedisMixin):
 
     async def get(self):
         name = self.get_argument("name", "default")
-        async with self.slave_redis() as db:
+        async with self.slave_connection() as db:
             value = await db.execute('get', 'counter-%s' % name)
         self.reply(name=name, counter=value)
 
     async def post(self):
         name = self.get_argument("name", "default")
-        async with self.slave_redis() as db:
+        async with self.master_connection() as db:
             value = await db.execute('incr', 'counter-%s' % name)
         self.reply(name=name, counter=value)
 

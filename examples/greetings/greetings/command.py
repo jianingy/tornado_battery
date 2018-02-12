@@ -22,10 +22,10 @@ LOG = logging.getLogger("app.biz")
 
 class DBMixin:
 
-    def master_db(self):
+    def master_connection(self):
         return PostgresConnector.instance("master").connection()
 
-    def slave_db(self):
+    def slave_connection(self):
         return PostgresConnector.instance("slave").connection()
 
 
@@ -33,13 +33,13 @@ class DBMixin:
 class AddController(JSONController, DBMixin):
 
     async def get(self):
-        with (await self.slave_db()) as db:
+        with (await self.slave_connection()) as db:
             cursor = await db.execute("SELECT quote FROM quotes ORDER BY RANDOM()")
             row = cursor.fetchone()
         self.reply(quote=row[0])
 
     async def post(self):
-        with (await self.master_db()) as db:
+        with (await self.master_connection()) as db:
             await db.execute("INSERT INTO quotes(quote) VALUES(%(quote)s)",
                              dict(quote=self.data["quote"]))
         self.reply(status="OK")
