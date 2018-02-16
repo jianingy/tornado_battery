@@ -9,7 +9,6 @@
 #               Jianing Yang @ 16 Feb, 2018
 #
 from tornado_battery.pattern import SingletonMixin
-from unittest import TestCase
 
 
 class Single1(SingletonMixin):
@@ -20,10 +19,8 @@ class Single2(SingletonMixin):
     pass
 
 
-class TestSingleton(TestCase):
-
-    def test_singleton(self):
-        Single2.instance()
-        instance_id = id(Single1.instance())
-        ids = [id(Single1.instance()) == instance_id for i in range(0, 100)]
-        self.assertTrue(all(ids))
+def test_singleton():
+    Single2.instance()
+    instance_id = id(Single1.instance())
+    ids = [id(Single1.instance()) == instance_id for i in range(0, 100)]
+    assert all(ids)

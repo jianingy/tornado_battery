@@ -9,7 +9,7 @@
 #               Jianing Yang @ 16 Feb, 2018
 #
 from tornado_battery.exception import GeneralException
-from unittest import TestCase
+import pytest
 
 
 class NonFormatException(GeneralException):
@@ -28,37 +28,40 @@ class ErrorCodeException(GeneralException):
     error_code = 40001
 
 
-class TestException(TestCase):
+def test_non_format_exception():
+    match = r"^a non-format message$"
+    with pytest.raises(NonFormatException, match=match):
+        raise NonFormatException()
 
-    def test_non_format_exception(self):
-        match = "^a non-format message$"
-        with self.assertRaisesRegex(NonFormatException, match):
-            raise NonFormatException()
 
-    def test_format_exception(self):
-        match = "^an exception: something wrong$"
-        with self.assertRaisesRegex(SimpleFormatException, match):
-            raise SimpleFormatException(reason="something wrong")
+def test_format_exception():
+    match = "^an exception: something wrong$"
+    with pytest.raises(SimpleFormatException, match=match):
+        raise SimpleFormatException(reason="something wrong")
 
-    def test_error_format_exception(self):
-        match = ("^cannot format exception message: "
-                 "'an exception: %\(reason\)s'$")
-        with self.assertRaisesRegex(SimpleFormatException, match):
-            raise SimpleFormatException(other="something wrong")
 
-    def test_no_message_exception(self):
-        match = "application exception occurred: something wrong"
-        with self.assertRaisesRegex(NoMessageException, match):
-            raise NoMessageException(reason="something wrong")
+def test_error_format_exception():
+    match = ("^cannot format exception message: "
+             "'an exception: %\(reason\)s'$")
+    with pytest.raises(SimpleFormatException, match=match):
+        raise SimpleFormatException(other="something wrong")
 
-    def test_error_code_exception(self):
-        match = "application exception occurred: something wrong"
-        with self.assertRaisesRegex(ErrorCodeException, match) as cm:
-            raise ErrorCodeException(reason="something wrong", error_code=4001)
-        self.assertEqual(cm.exception.error_code, 4001)
 
-    def test_error_code_set(self):
-        match = "application exception occurred: something wrong"
-        with self.assertRaisesRegex(NoMessageException, match) as cm:
-            raise NoMessageException(reason="something wrong", error_code=4002)
-        self.assertEqual(cm.exception.error_code, 4002)
+def test_no_message_exception():
+    match = "application exception occurred: something wrong"
+    with pytest.raises(NoMessageException, match=match):
+        raise NoMessageException(reason="something wrong")
+
+
+def test_error_code_exception():
+    match = "application exception occurred: something wrong"
+    with pytest.raises(ErrorCodeException, match=match) as ei:
+        raise ErrorCodeException(reason="something wrong", error_code=4001)
+    assert ei.value.error_code == 4001
+
+
+def test_error_code_set():
+    match = "application exception occurred: something wrong"
+    with pytest.raises(NoMessageException, match=match) as ei:
+        raise NoMessageException(reason="something wrong", error_code=4002)
+    assert ei.value.error_code == 4002

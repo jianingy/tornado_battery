@@ -9,12 +9,13 @@
 #               Jianing Yang @ 16 Feb, 2018
 #
 from tornado_battery.extra import try_get_value
-from unittest import TestCase
+import pytest
 
 
-class TestTryGetValue(TestCase):
+@pytest.fixture
+def data():
 
-    tree = {
+    return {
         "1": {
             "A": {
                 "a": "value"
@@ -23,17 +24,22 @@ class TestTryGetValue(TestCase):
         }
     }
 
-    def test_last_node(self):
-        self.assertEqual(try_get_value(self.tree, "1.A.a", None), "value")
 
-    def test_last_non_exists(self):
-        self.assertEqual(try_get_value(self.tree, "1.A.b", "n/a"), "n/a")
+def test_last_node(data):
+    assert try_get_value(data, "1.A.a", None) == "value"
 
-    def test_middle_non_exists(self):
-        self.assertEqual(try_get_value(self.tree, "1.c.a", "n/a"), "n/a")
 
-    def test_middle_node(self):
-        self.assertEqual(try_get_value(self.tree, "1.B", "n/a"), "Bvalue")
+def test_last_non_exists(data):
+    assert try_get_value(data, "1.A.b", "n/a") == "n/a"
 
-    def test_empty(self):
-        self.assertEqual(try_get_value(self.tree, "", "n/a"), "n/a")
+
+def test_middle_non_exists(data):
+    assert try_get_value(data, "1.c.a", "n/a") == "n/a"
+
+
+def test_middle_node(data):
+    assert try_get_value(data, "1.B", "n/a") == "Bvalue"
+
+
+def test_empty(data):
+    assert try_get_value(data, "", "n/a") == "n/a"

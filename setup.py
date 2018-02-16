@@ -16,4 +16,5 @@ version = '0.2.1'
 setup(name=package,
       version=version,
       description="a set of utilities help write tornado apps quickly and easily",
-      url='https://github.com/jianingy/tornado_battery')
+      url='https://github.com/jianingy/tornado_battery',
+      setup_requires=['pytest-runner',])
