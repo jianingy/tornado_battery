@@ -20,7 +20,8 @@ class GeneralException(Exception):
             try:
                 message = self.error_format % self.kwargs
             except:
-                message = "cannot format exception: %s" % self.error_format
+                message = ("cannot format exception message: '%s'" %
+                           self.error_format)
 
         if "error_code" in kwargs:
             self.error_code = kwargs["error_code"]
