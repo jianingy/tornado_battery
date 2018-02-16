@@ -10,6 +10,7 @@
 #
 from .exception import GeneralException, ClientException
 from ujson import loads as json_decode, dumps as json_encode
+from tornado.options import options
 from traceback import format_exception
 import tornado.web
 
@@ -37,8 +38,8 @@ class JSONController(tornado.web.RequestHandler):
         if content_type.strip().lower().startswith('application/json'):
             try:
                 self.data = json_decode(self.request.body)
-            except:
-                raise InvalidJSONRequestData()
+            except ValueError as e:
+                raise InvalidJSONRequestData() from e
 
     def reply(self, *args, **kwargs):
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
@@ -68,7 +69,7 @@ class JSONController(tornado.web.RequestHandler):
             else:
                 self.set_status(500)
                 retval["status"] = 500000
-            if tornado.options.options.debug:
+            if hasattr(options, 'debug') and options.debug:
                 retval['traceback'] = format_exception(exc_type, exc, trace)
             self.reply(**retval)
         else:

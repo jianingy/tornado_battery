@@ -14,7 +14,7 @@ import threading
 LOG = logging.getLogger("tornado.application")
 
 
-class SingletonMixin(object):
+class SingletonMixin:
 
     __instance_lock = threading.Lock()
 
@@ -25,7 +25,8 @@ class SingletonMixin(object):
                 if not hasattr(cls, "__instance"):
                     LOG.debug("create a new instance for '%s'" % cls)
                     setattr(cls, "__instance", cls())
-        return cls.__instance
+
+        return getattr(cls, "__instance")
 
 
 if __name__ == '__main__':
@@ -34,4 +35,4 @@ if __name__ == '__main__':
         pass
 
     _id = id(Single.instance())
-    print(all([id(Single.instance()) == _id for i in range(0, 100)]))
+    print([id(Single.instance()) == _id for i in range(0, 100)])
