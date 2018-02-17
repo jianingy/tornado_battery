@@ -20,15 +20,6 @@ import logging
 LOG = logging.getLogger("app.biz")
 
 
-class DBMixin:
-
-    def cursor(self, name="slave"):
-        return PostgresConnector.instance(name).cursor()
-
-    def connection(self, name="slave"):
-        return PostgresConnector.instance(name).connection()
-
-
 @route("/api/v1/greetings")
 class AddController(JSONController, DBMixin):
 
