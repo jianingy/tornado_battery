@@ -13,7 +13,9 @@ from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
+import asyncio
 import aioredis
+import functools
 import logging
 
 LOG = logging.getLogger('tornado.application')
@@ -41,7 +43,7 @@ class RedisConnector(NamedSingletonMixin):
         if r.scheme.lower() != 'redis':
             raise RedisConnector('%s is not a redis connection scheme' % connection_string)
         num_connections = opts[option_name(name, "num-connections")]
-        LOG.info('connecting redis %s' % connection_string)
+        LOG.info('connecting redis [%s] %s' % (self.name, connection_string))
         self._connections = await aioredis.create_pool(
             connection_string,
             encoding="UTF-8",
@@ -66,3 +68,25 @@ def register_redis_options(instance='master', default_uri='redis:///'):
            default=[1, 2],
            group='%s redis' % instance,
            help='# of redis connections for %s ' % instance)
+
+
+def with_redis(method=None, name="master"):
+
+    def wrapper(function):
+
+        @functools.wraps(function)
+        async def f(*args, **kwargs):
+            async with RedisConnector.instance(name).connection() as redis:
+                if "redis" in kwargs:
+                    raise RedisConnectorError(
+                        "duplicated database argument for redis %s" % name)
+                kwargs.update({"redis": redis})
+                retval = await function(*args, **kwargs)
+                return retval
+        return f
+
+    return wrapper
+
+
+def connect_redis(name):
+    return RedisConnector.instance(name).connect

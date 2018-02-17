@@ -12,7 +12,7 @@ from tornado_battery import disable_tornado_logging_options  # noqa
 from tornado_battery.command import CommandMixin
 from tornado_battery.controller import JSONController
 from tornado_battery.route import route
-from tornado_battery.redis import register_redis_options, RedisConnector
+from tornado_battery.redis import register_redis_options, with_redis, connect_redis
 from tornado.options import options
 from tornado.web import Application as WebApplication
 import logging
@@ -20,28 +20,19 @@ import logging
 LOG = logging.getLogger("app.biz")
 
 
-class RedisMixin:
-
-    def master_connection(self):
-        return RedisConnector.instance("master").connection()
-
-    def slave_connection(self):
-        return RedisConnector.instance("slave").connection()
-
-
 @route("/api/v1/counter")
-class AddController(JSONController, RedisMixin):
+class AddController(JSONController):
 
-    async def get(self):
+    @with_redis(name="slave")
+    async def get(self, redis):
         name = self.get_argument("name", "default")
-        async with self.slave_connection() as db:
-            value = await db.execute('get', 'counter-%s' % name)
+        value = await redis.execute('get', 'counter-%s' % name)
         self.reply(name=name, counter=value)
 
-    async def post(self):
+    @with_redis(name="master")
+    async def post(self, redis):
         name = self.get_argument("name", "default")
-        async with self.master_connection() as db:
-            value = await db.execute('incr', 'counter-%s' % name)
+        value = await redis.execute('incr', 'counter-%s' % name)
         self.reply(name=name, counter=value)
 
 
@@ -52,8 +43,9 @@ class GreetingServer(CommandMixin):
         register_redis_options("slave", "redis://localhost/0")
 
     def before_run(self, io_loop):
-        io_loop.run_sync(RedisConnector.instance("master").connect)
-        io_loop.run_sync(RedisConnector.instance("slave").connect)
+        io_loop.run_sync(connect_redis("master"))
+        io_loop.run_sync(connect_redis("slave"))
+
         app = WebApplication(route.get_routes(), autoreload=options.debug)
         app.listen(8000, "0.0.0.0")
         LOG.info("server started.")

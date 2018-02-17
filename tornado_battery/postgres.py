@@ -17,15 +17,10 @@ from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
+import asyncio
+import aiopg
+import functools
 import logging
-import momoko
-import platform
-import tornado.ioloop
-if platform.python_implementation() == 'PyPy':
-    import psycopg2cffi.compat  # noqa
-    psycopg2cffi.compat.register()
-else:
-    import psycopg2             # noqa
 
 LOG = logging.getLogger('tornado.application')
 
@@ -56,23 +51,25 @@ class PostgresConnector(NamedSingletonMixin):
         self._reconnect_interval = opts[option_name(name, "reconnect-interval")]
         self._num_connections = opts[option_name(name, "num-connections")]
 
-    async def connection(self):
+    def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
-            await self.connect()
-        new = await self._connections.getconn()
-        return self._connections.manage(new)
+            raise PostgresConnectorError(
+                "no connection to database %s" % self.name)
+        return self._connections.acquire()
 
-    async def connect(self):
+    async def connect(self, event_loop=None):
         self.setup_options()
-        LOG.info('connecting postgresql %s' % self._connection_string)
-        self._connections = momoko.Pool(
+        LOG.info('connecting postgresql [%s] %s' %
+                 (self.name, self._connection_string))
+        if event_loop is None:
+            event_loop = asyncio.get_event_loop()
+        self._connections = await aiopg.create_pool(
             dsn=self._connection_string,
-            reconnect_interval=self._reconnect_interval,
-            size=int(self._num_connections[0]),
-            max_size=int(self._num_connections[-1]),
-            ioloop=tornado.ioloop.IOLoop.instance(),
+            minsize=int(self._num_connections[0]),
+            maxsize=int(self._num_connections[-1]),
+            loop=event_loop,
         )
-        await self._connections.connect()
+        return self._connections
 
 
 def option_name(instance, option):
@@ -95,3 +92,25 @@ def register_postgres_options(instance='master', default_uri='postgres:///'):
            default=5,
            group='%s database' % instance,
            help='reconnect interval for %s' % instance)
+
+
+def with_postgres(method=None, name="master"):
+
+    def wrapper(function):
+
+        @functools.wraps(function)
+        async def f(*args, **kwargs):
+            async with PostgresConnector.instance(name).connection() as db:
+                if "db" in kwargs:
+                    raise PostgresConnectorError(
+                        "duplicated database argument for database %s" % name)
+                kwargs.update({"db": db})
+                retval = await function(*args, **kwargs)
+                return retval
+        return f
+
+    return wrapper
+
+
+def connect_postgres(name):
+    return PostgresConnector.instance(name).connect
