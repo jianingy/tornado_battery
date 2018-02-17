@@ -8,19 +8,20 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @ 12 Feb, 2018
 #
-from .exception import GeneralException
+from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
 import aioredis
+import asyncio
 import functools
 import logging
 
 LOG = logging.getLogger('tornado.application')
 
 
-class RedisConnectorError(GeneralException):
+class RedisConnectorError(ServerException):
     pass
 
 
@@ -34,7 +35,7 @@ class RedisConnector(NamedSingletonMixin):
             raise RedisConnectorError("no connection found")
         return self._connections.get()
 
-    async def connect(self):
+    async def connect(self, event_loop=None):
         name = self.name
         opts = options.group_dict('%s redis' % name)
         connection_string = opts[option_name(name, "uri")]
@@ -44,11 +45,14 @@ class RedisConnector(NamedSingletonMixin):
                                       connection_string)
         num_connections = opts[option_name(name, "num-connections")]
         LOG.info('connecting redis [%s] %s' % (self.name, connection_string))
+        if event_loop is None:
+            event_loop = asyncio.get_event_loop()
         self._connections = await aioredis.create_pool(
             connection_string,
             encoding="UTF-8",
             minsize=int(num_connections[0]),
-            maxsize=int(num_connections[-1])
+            maxsize=int(num_connections[-1]),
+            loop=event_loop
         )
 
 

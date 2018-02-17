@@ -12,7 +12,7 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #                             22 Jan, 2016
 #
-from .exception import GeneralException
+from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
@@ -25,7 +25,7 @@ import logging
 LOG = logging.getLogger('tornado.application')
 
 
-class PostgresConnectorError(GeneralException):
+class PostgresConnectorError(ServerException):
     pass
 
 
