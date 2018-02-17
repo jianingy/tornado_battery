@@ -21,7 +21,7 @@ LOG = logging.getLogger("app.biz")
 
 
 @route("/api/v1/greetings")
-class AddController(JSONController, DBMixin):
+class AddController(JSONController):
 
     @with_postgres(name="slave")
     async def get(self, db):
