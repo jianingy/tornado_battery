@@ -9,7 +9,7 @@
 #               Jianing Yang @ 16 Feb, 2018
 #
 from tornado_battery.redis import register_redis_options, with_redis
-from tornado_battery.redis import RedisConnector
+from tornado_battery.redis import RedisConnector, RedisConnectorError
 import pytest
 
 pytestmark = pytest.mark.asyncio
@@ -43,3 +43,34 @@ async def test_decorator(redis):
         value = await redis.execute("set", "redis_decorator_value", "1983")
         return value
     assert (await _read()) == "OK"
+
+
+async def test_decorator_duplicated(redis):
+
+    @with_redis(name="test")
+    async def _read(redis):
+        value = await redis.execute("set", "redis_decorator_value", "1983")
+        return value
+    with pytest.raises(RedisConnectorError):
+        await _read(redis=None)
+
+
+async def test_no_connection():
+    match = r"^no connection found$"
+    with pytest.raises(RedisConnectorError, match=match):
+        RedisConnector.connection("test")
+
+
+async def test_invalid_connection_scheme():
+    from tornado.options import options
+    options.redis_test_uri = "test://"
+    match = r" is not a redis connection scheme$"
+    with pytest.raises(RedisConnectorError, match=match):
+        await RedisConnector.instance("test").connect()
+
+
+async def test_option_name():
+    from tornado_battery.redis import option_name
+
+    assert option_name("master", "uri") == "redis-uri"
+    assert option_name("slave", "uri") == "redis-slave-uri"

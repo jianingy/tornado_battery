@@ -8,11 +8,11 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @ 16 Feb, 2018
 #
-from tornado_battery.controller import JSONController, ClientException
-from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado_battery.controller import JSONController
+from tornado_battery.exception import ClientException, ServerException
+from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application as WebApplication
 from ujson import dumps as json_encode
-import pytest
 
 
 class SimpleController(JSONController):
@@ -30,10 +30,22 @@ class BailController(JSONController):
         self.bail(503, reason="something wrong")
 
 
-class ExceptionController(JSONController):
+class ClientExceptionController(JSONController):
 
     def get(self):
         raise ClientException(reason="something wrong")
+
+
+class ServerExceptionController(JSONController):
+
+    def get(self):
+        raise ServerException(reason="something wrong")
+
+
+class PythonExceptionController(JSONController):
+
+    def get(self):
+        raise ValueError("a value error")
 
 
 class TestController(AsyncHTTPTestCase):
@@ -42,7 +54,9 @@ class TestController(AsyncHTTPTestCase):
         app = WebApplication([
             (r"/", SimpleController),
             (r"/bail", BailController),
-            (r"/exception", ExceptionController),
+            (r"/exception/client", ClientExceptionController),
+            (r"/exception/server", ServerExceptionController),
+            (r"/exception/python", PythonExceptionController),
         ])
         return app
 
@@ -66,7 +80,10 @@ class TestController(AsyncHTTPTestCase):
 
     def test_json_request_no_content_type(self):
         data = json_encode(dict(x=1, y=2))
-        response = self.fetch("/", method="POST", body=data)
+        headers = {
+            "Content-Type": ""
+        }
+        response = self.fetch("/", method="POST", body=data, headers=headers)
         assert response.body == b'{"data":{}}'
 
     def test_json_request_invalid_json_data(self):
@@ -75,10 +92,20 @@ class TestController(AsyncHTTPTestCase):
             "Content-Type": "application/json"
         }
         response = self.fetch("/", method="POST", body=data, headers=headers)
-        match = b'{"reason":"Request data must be in JSON format","status":400001}'
+        match = (b'{"reason":"Request data must be in JSON format","status":400001}')
         assert response.body == match
 
-    def test_exception(self):
-        response = self.fetch("/exception")
+    def test_client_exception(self):
+        response = self.fetch("/exception/client")
         match = b'{"reason":"something wrong","status":400000}'
+        assert response.body == match
+
+    def test_server_exception(self):
+        response = self.fetch("/exception/server")
+        match = b'{"reason":"something wrong","status":500000}'
+        assert response.body == match
+
+    def test_python_exception(self):
+        response = self.fetch("/exception/python")
+        match = b'{"reason":"a value error","status":500000}'
         assert response.body == match

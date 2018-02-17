@@ -53,8 +53,7 @@ class PostgresConnector(NamedSingletonMixin):
 
     def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
-            raise PostgresConnectorError(
-                "no connection to database %s" % self.name)
+            raise PostgresConnectorError("no connection found")
         return self._connections.acquire()
 
     async def connect(self, event_loop=None):

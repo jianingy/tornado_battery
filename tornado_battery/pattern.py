@@ -46,12 +46,3 @@ class NamedSingletonMixin:
             with cls.__instance_lock:
                 instances[name] = cls(name=name)
         return instances[name]
-
-
-if __name__ == '__main__':
-
-    class Single(SingletonMixin):
-        pass
-
-    _id = id(Single.instance())
-    print([id(Single.instance()) == _id for i in range(0, 100)])

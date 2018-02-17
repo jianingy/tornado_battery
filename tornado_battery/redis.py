@@ -13,7 +13,6 @@ from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
-import asyncio
 import aioredis
 import functools
 import logging
@@ -41,7 +40,8 @@ class RedisConnector(NamedSingletonMixin):
         connection_string = opts[option_name(name, "uri")]
         r = urlparse(connection_string)
         if r.scheme.lower() != 'redis':
-            raise RedisConnector('%s is not a redis connection scheme' % connection_string)
+            raise RedisConnectorError('%s is not a redis connection scheme' %
+                                      connection_string)
         num_connections = opts[option_name(name, "num-connections")]
         LOG.info('connecting redis [%s] %s' % (self.name, connection_string))
         self._connections = await aioredis.create_pool(

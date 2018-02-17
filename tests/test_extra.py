@@ -43,3 +43,7 @@ def test_middle_node(data):
 
 def test_empty(data):
     assert try_get_value(data, "", "n/a") == "n/a"
+
+
+def test_non_dict():
+    assert try_get_value(1, "", "n/a") == "n/a"

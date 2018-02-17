@@ -8,7 +8,7 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @  8 Feb, 2018
 #
-from .exception import GeneralException, ClientException
+from .exception import GeneralException, ClientException, ServerException
 from ujson import loads as json_decode, dumps as json_encode
 from tornado.options import options
 from traceback import format_exception
@@ -54,15 +54,13 @@ class JSONController(tornado.web.RequestHandler):
         if 'exc_info' in kwargs:
             retval = dict()
             exc_type, exc, trace = kwargs['exc_info']
-            if exc.args and isinstance(exc.args[0], dict):
-                retval["exc"] = exc.args[0]
             if isinstance(exc, GeneralException):
                 retval["reason"] = exc.message
             else:
                 retval["reason"] = str(exc)
             if isinstance(exc, ClientException):
                 self.set_status(400)
-            elif isinstance(exc, ClientException):
+            elif isinstance(exc, ServerException):
                 self.set_status(500)
             if hasattr(exc, "error_code"):
                 retval["status"] = exc.error_code
