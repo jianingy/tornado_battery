@@ -29,6 +29,25 @@ class SingletonMixin:
         return getattr(cls, "__instance")
 
 
+class NamedSingletonMixin:
+
+    __instance_lock = threading.Lock()
+
+    @classmethod
+    def instance(cls, name):
+        if not hasattr(cls, "__instances"):
+            with cls.__instance_lock:
+                if not hasattr(cls, "__instances"):
+                    LOG.debug("create a instances storage for '%s'" % cls)
+                    setattr(cls, "__instances", dict())
+
+        instances = getattr(cls, "__instances")
+        if name not in instances:
+            with cls.__instance_lock:
+                instances[name] = cls(name=name)
+        return instances[name]
+
+
 if __name__ == '__main__':
 
     class Single(SingletonMixin):

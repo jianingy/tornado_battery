@@ -9,12 +9,12 @@
 #               Jianing Yang @ 12 Feb, 2018
 #
 from .exception import GeneralException
+from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
 import aioredis
 import logging
-import threading
 
 LOG = logging.getLogger('tornado.application')
 
@@ -23,18 +23,7 @@ class RedisConnectorError(GeneralException):
     pass
 
 
-class RedisConnector:
-
-    __instance_lock = threading.Lock()
-    __instances = dict()
-
-    @classmethod
-    def instance(cls, name='master'):
-        if name not in cls.__instances:
-            with cls.__instance_lock:
-                LOG.debug("create a new redis instance for '%s'" % name)
-                RedisConnector.__instances[name] = RedisConnector(name)
-        return RedisConnector.__instances[name]
+class RedisConnector(NamedSingletonMixin):
 
     def __init__(self, name):
         self.name = name

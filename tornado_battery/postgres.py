@@ -13,13 +13,13 @@
 #                             22 Jan, 2016
 #
 from .exception import GeneralException
+from .pattern import NamedSingletonMixin
 from tornado.options import define, options
 from urllib.parse import urlparse
 
 import logging
 import momoko
 import platform
-import threading
 import tornado.ioloop
 if platform.python_implementation() == 'PyPy':
     import psycopg2cffi.compat  # noqa
@@ -34,18 +34,7 @@ class PostgresConnectorError(GeneralException):
     pass
 
 
-class PostgresConnector:
-
-    __instance_lock = threading.Lock()
-    __instances = dict()
-
-    @classmethod
-    def instance(cls, name='master'):
-        if name not in cls.__instances:
-            with cls.__instance_lock:
-                LOG.debug("create a new postgres instance for '%s'" % name)
-                PostgresConnector.__instances[name] = PostgresConnector(name)
-        return PostgresConnector.__instances[name]
+class PostgresConnector(NamedSingletonMixin):
 
     def __init__(self, name):
         self.name = name
