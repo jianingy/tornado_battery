@@ -12,6 +12,7 @@ from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from aio_pika import connect_robust, Message
 from tornado.options import define, options
+from typing import Any
 from ujson import dumps as json_encode, loads as json_decode
 
 import asyncio
@@ -50,8 +51,8 @@ class JSONQueueError(ServerException):
 
 class JSONQueue(QueueConnector):
 
-    async def setup(self, queue=None, exchange='', routing_key='',
-                    durable=False):
+    async def setup(self, queue: str=None, exchange: str='', routing_key: str='',
+                    durable: bool=False):
         channel = await self.connection().channel()
         exchange = await channel.declare_exchange(exchange)
         if queue:
@@ -62,7 +63,7 @@ class JSONQueue(QueueConnector):
         self.routing_key = routing_key
         self.active_exchange = exchange
 
-    async def publish(self, content):
+    async def publish(self, content: Any):
         if not hasattr(self, "active_exchange"):
             raise JSONQueueError("no active exchange set")
 
@@ -86,14 +87,14 @@ class JSONQueue(QueueConnector):
         return data, msg
 
 
-def option_name(instance, option):
+def option_name(instance: str, option: str) -> str:
     if instance == 'master':
         return 'queue-%s' % option
     else:
         return 'queue-%s-%s' % (instance, option)
 
 
-def register_queue_options(instance='master', default_uri='amqp:///'):
+def register_queue_options(instance: str='master', default_uri: str='amqp:///'):
     define(option_name(instance, "uri"),
            default=default_uri,
            group='%s queue' % instance,

@@ -31,7 +31,7 @@ class PostgresConnectorError(ServerException):
 
 class PostgresConnector(NamedSingletonMixin):
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def setup_options(self):
@@ -71,14 +71,14 @@ class PostgresConnector(NamedSingletonMixin):
         return self._connections
 
 
-def option_name(instance, option):
+def option_name(instance: str, option: str) -> str:
     if instance == 'master':
         return 'postgres-%s' % option
     else:
         return 'postgres-%s-%s' % (instance, option)
 
 
-def register_postgres_options(instance='master', default_uri='postgres:///'):
+def register_postgres_options(instance: str='master', default_uri: str='postgres:///'):
     define(option_name(instance, "uri"),
            default=default_uri,
            group='%s database' % instance,
@@ -93,7 +93,7 @@ def register_postgres_options(instance='master', default_uri='postgres:///'):
            help='reconnect interval for %s' % instance)
 
 
-def with_postgres(method=None, name="master"):
+def with_postgres(method=None, name: str="master"):
 
     def wrapper(function):
 
@@ -111,5 +111,5 @@ def with_postgres(method=None, name="master"):
     return wrapper
 
 
-def connect_postgres(name):
+def connect_postgres(name: str):
     return PostgresConnector.instance(name).connect

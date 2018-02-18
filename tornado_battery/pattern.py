@@ -34,7 +34,7 @@ class NamedSingletonMixin:
     __instance_lock = threading.Lock()
 
     @classmethod
-    def instance(cls, name):
+    def instance(cls, name: str):
         if not hasattr(cls, "__instances"):
             with cls.__instance_lock:
                 if not hasattr(cls, "__instances"):

@@ -27,7 +27,7 @@ class RedisConnectorError(ServerException):
 
 class RedisConnector(NamedSingletonMixin):
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def connection(self):
@@ -56,14 +56,14 @@ class RedisConnector(NamedSingletonMixin):
         )
 
 
-def option_name(instance, option):
+def option_name(instance: str, option: str) -> str:
     if instance == 'master':
         return 'redis-%s' % option
     else:
         return 'redis-%s-%s' % (instance, option)
 
 
-def register_redis_options(instance='master', default_uri='redis:///'):
+def register_redis_options(instance: str='master', default_uri: str='redis:///'):
     define(option_name(instance, "uri"),
            default=default_uri,
            group='%s redis' % instance,
@@ -74,7 +74,7 @@ def register_redis_options(instance='master', default_uri='redis:///'):
            help='# of redis connections for %s ' % instance)
 
 
-def with_redis(method=None, name="master"):
+def with_redis(method=None, name: str="master"):
 
     def wrapper(function):
 
@@ -92,5 +92,5 @@ def with_redis(method=None, name="master"):
     return wrapper
 
 
-def connect_redis(name):
+def connect_redis(name: str):
     return RedisConnector.instance(name).connect

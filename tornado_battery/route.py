@@ -11,7 +11,7 @@ class RouteFactory:
     _route_classes = dict()
 
     @classmethod
-    def create(cls, route_name):
+    def create(cls, route_name: str):
         route_cls = type('Route%s' % route_name.capitalize(),
                          (RouteManager,),
                          {"route_name": route_name})
@@ -19,7 +19,7 @@ class RouteFactory:
         return cls._route_classes[route_name]
 
     @classmethod
-    def get_routes(cls, route_name):
+    def get_routes(cls, route_name: str):
         route_cls = cls._route_classes.get(route_name, None)
         if route_cls is None:
             return []
@@ -30,7 +30,7 @@ class RouteManager(object):
 
     _routes = []
 
-    def __init__(self, uri, name=None, redirect=None):
+    def __init__(self, uri: str, name: str=None, redirect: str=None):
         self._uri = uri
         self._redirect = redirect
         self.name = name

@@ -45,12 +45,12 @@ class JSONController(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.finish(json_encode(kwargs))
 
-    def bail(self, status_code, *args, **kwargs):
+    def bail(self, status_code: int, *args, **kwargs):
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.set_status(status_code)
         self.finish(json_encode(kwargs))
 
-    def write_error(self, status_code, **kwargs):
+    def write_error(self, status_code: int, **kwargs):
         if 'exc_info' in kwargs:
             retval = dict()
             exc_type, exc, trace = kwargs['exc_info']

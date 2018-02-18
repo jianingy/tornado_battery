@@ -13,7 +13,7 @@
 class GeneralException(Exception):
     error_format = "application exception occurred: %(reason)s"
 
-    def __init__(self, message=None, **kwargs):
+    def __init__(self, message: str=None, **kwargs):
         self.kwargs = kwargs
 
         if not message:
