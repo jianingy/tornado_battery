@@ -8,7 +8,7 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @  8 Feb, 2018
 #
-from setuptools import setup
+from setuptools import setup, find_packages
 
 package = 'tornado_battery'
 version = '0.4.0'
@@ -17,4 +17,5 @@ setup(name=package,
       version=version,
       description="a set of utilities help write tornado apps quickly and easily",
       url='https://github.com/jianingy/tornado_battery',
-      setup_requires=['pytest-runner',])
+      setup_requires=['pytest-runner',],
+      packages=find_packages())
