@@ -27,6 +27,7 @@ class JSONController(tornado.web.RequestHandler):
         self.data = dict()
 
     def prepare(self):
+        super().prepare()
         content_type = self.request.headers.get('Content-Type')
 
         if not self.request.body:
