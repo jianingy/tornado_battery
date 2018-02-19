@@ -84,7 +84,7 @@ def with_redis(name: str):
                 if "redis" in kwargs:
                     raise RedisConnectorError(
                         "duplicated database argument for redis %s" % name)
-                kwargs.update({"redis": redis})
+                kwargs.update({"redis": aioredis.Redis(redis)})
                 retval = await function(*args, **kwargs)
                 return retval
         return f
