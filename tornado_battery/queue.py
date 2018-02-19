@@ -41,7 +41,7 @@ class QueueConnector(NamedSingletonMixin):
 
     def connection(self):
         if not hasattr(self, '_connection') or not self._connection:
-            raise QueueConnectorError("no connection found")
+            raise QueueConnectorError("no connection of %s found" % self.name)
         return self._connection
 
 

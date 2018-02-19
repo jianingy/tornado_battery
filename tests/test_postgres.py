@@ -48,9 +48,9 @@ async def test_decorator_duplicated(postgres):
 
 
 async def test_no_connection():
-    match = r"^no connection found$"
+    match = r"^no connection of noconn found$"
     with pytest.raises(PostgresConnectorError, match=match):
-        PostgresConnector.connection("test")
+        PostgresConnector.instance("noconn").connection()
 
 
 async def test_invalid_connection_scheme():

@@ -56,9 +56,9 @@ async def test_decorator_duplicated(redis):
 
 
 async def test_no_connection():
-    match = r"^no connection found$"
+    match = r"^no connection of noconn found$"
     with pytest.raises(RedisConnectorError, match=match):
-        RedisConnector.connection("test")
+        RedisConnector.instance("noconn").connection()
 
 
 async def test_invalid_connection_scheme():

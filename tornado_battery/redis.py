@@ -32,7 +32,7 @@ class RedisConnector(NamedSingletonMixin):
 
     def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
-            raise RedisConnectorError("no connection found")
+            raise RedisConnectorError("no connection of %s found" % self.name)
         return self._connections.get()
 
     async def connect(self, event_loop=None):

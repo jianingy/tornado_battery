@@ -51,9 +51,9 @@ async def test_no_setup_consume(vanilla_queue):
 
 
 async def test_no_connection():
-    match = r"^no connection found$"
+    match = r"^no connection of noconn found$"
     with pytest.raises(QueueConnectorError, match=match):
-        JSONQueue.connection("test")
+        JSONQueue.instance("noconn").connection()
 
 
 async def test_option_name():
