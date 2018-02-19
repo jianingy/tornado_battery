@@ -74,7 +74,7 @@ def register_redis_options(instance: str='master', default_uri: str='redis:///')
            help='# of redis connections for %s ' % instance)
 
 
-def with_redis(method=None, name: str="master"):
+def with_redis(name: str):
 
     def wrapper(function):
 

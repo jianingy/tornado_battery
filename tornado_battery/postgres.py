@@ -93,7 +93,7 @@ def register_postgres_options(instance: str='master', default_uri: str='postgres
            help='reconnect interval for %s' % instance)
 
 
-def with_postgres(method=None, name: str="master"):
+def with_postgres(name: str):
 
     def wrapper(function):
 
