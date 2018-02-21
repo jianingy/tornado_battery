@@ -88,10 +88,7 @@ class JSONQueue(QueueConnector):
 
 
 def option_name(instance: str, option: str) -> str:
-    if instance == 'master':
-        return 'queue-%s' % option
-    else:
-        return 'queue-%s-%s' % (instance, option)
+    return 'queue-%s-%s' % (instance, option)
 
 
 def register_queue_options(instance: str='master', default_uri: str='amqp:///'):

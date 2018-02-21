@@ -57,10 +57,7 @@ class RedisConnector(NamedSingletonMixin):
 
 
 def option_name(instance: str, option: str) -> str:
-    if instance == 'master':
-        return 'redis-%s' % option
-    else:
-        return 'redis-%s-%s' % (instance, option)
+    return 'redis-%s-%s' % (instance, option)
 
 
 def register_redis_options(instance: str='master', default_uri: str='redis:///'):

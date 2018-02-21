@@ -72,10 +72,7 @@ class PostgresConnector(NamedSingletonMixin):
 
 
 def option_name(instance: str, option: str) -> str:
-    if instance == 'master':
-        return 'postgres-%s' % option
-    else:
-        return 'postgres-%s-%s' % (instance, option)
+    return 'postgres-%s-%s' % (instance, option)
 
 
 def register_postgres_options(instance: str='master', default_uri: str='postgres:///'):

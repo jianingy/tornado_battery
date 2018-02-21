@@ -59,5 +59,5 @@ async def test_no_connection():
 async def test_option_name():
     from tornado_battery.queue import option_name
 
-    assert option_name("master", "uri") == "queue-uri"
+    assert option_name("master", "uri") == "queue-master-uri"
     assert option_name("slave", "uri") == "queue-slave-uri"
