@@ -14,7 +14,7 @@ import pytest
 import logging
 
 pytestmark = pytest.mark.asyncio
-register_mysql_options("test", "mysql://root:root@172.17.0.2:3306/test")
+register_mysql_options("test", "mysql://root@127.0.0.1:3306/test")
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("test_mysql")
 
