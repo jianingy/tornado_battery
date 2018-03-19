@@ -60,7 +60,7 @@ class MysqlConnector(NamedSingletonMixin):
             password=self._password, db=self._db,
             minsize=int(self._num_connections[0]),
             maxsize=int(self._num_connections[-1]),
-            autocommit=True, loop=event_loop
+            autocommit=True, loop=event_loop, charset="utf8"
         )
         return self._connections
 
