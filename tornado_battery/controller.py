@@ -51,6 +51,11 @@ class JSONController(tornado.web.RequestHandler):
         self.set_status(status_code)
         self.finish(json_encode(kwargs))
 
+    def set_default_headers(self, *args, **kwargs):
+        super().set_default_headers(*args, **kwargs)
+        if options.debug:
+            self.set_header("Access-Control-Allow-Origin", "*")
+
     def write_error(self, status_code: int, **kwargs):
         if 'exc_info' in kwargs:
             retval = dict()

@@ -8,12 +8,15 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @ 16 Feb, 2018
 #
-from tornado_battery.controller import JSONController
-from tornado_battery.exception import ClientException, ServerException
+from tornado.options import options, define
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application as WebApplication
+from tornado_battery.controller import JSONController
+from tornado_battery.exception import ClientException, ServerException
 from ujson import dumps as json_encode
+from unittest import mock
 
+define("debug", group="main", default=False, help="enable debug")
 
 class SimpleController(JSONController):
 
@@ -109,3 +112,11 @@ class TestController(AsyncHTTPTestCase):
         response = self.fetch("/exception/python")
         match = b'{"reason":"a value error","status":500000}'
         assert response.body == match
+
+    def test_allow_origin(self):
+        response = self.fetch("/")
+        assert "Access-Control-Allow-Origin" not in response.headers
+
+        with mock.patch.object(options.mockable(), 'debug', True):
+            response = self.fetch("/")
+            assert response.headers["Access-Control-Allow-Origin"] == "*"
