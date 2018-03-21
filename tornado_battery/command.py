@@ -80,7 +80,7 @@ class CommandMixin:
         logger = logging.getLogger()
         logger.setLevel(getattr(logging, level))
 
-    def setup(self, io_loop):
+    def setup(self):
         pass
 
     def before_run(self, io_loop):
