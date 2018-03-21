@@ -51,6 +51,11 @@ class JSONController(tornado.web.RequestHandler):
         self.set_status(status_code)
         self.finish(json_encode(kwargs))
 
+    def options(self):
+        super().options()
+        if debug:
+            self.set_header("Allow", "POST, GET, PUT, DELETE, OPTIONS, PATCH")
+
     def set_default_headers(self, *args, **kwargs):
         super().set_default_headers(*args, **kwargs)
         if options.debug:
@@ -60,7 +65,6 @@ class JSONController(tornado.web.RequestHandler):
             self.set_header("Access-Control-Max-Age", "3600")
             self.set_header("Access-Control-Allow-Headers",
                            "Content-Type, Access-Control-Allow-Headers")
-
 
     def write_error(self, status_code: int, **kwargs):
         if 'exc_info' in kwargs:
