@@ -90,7 +90,7 @@ class CommandMixin:
         from tornado.options import parse_command_line
 
         io_loop = tornado.ioloop.IOLoop.current()
-        self.setup(io_loop)
+        self.setup()
         parse_command_line()
         self.enable_logging()
         self.before_run(io_loop)
