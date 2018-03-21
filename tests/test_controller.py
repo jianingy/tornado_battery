@@ -51,6 +51,15 @@ class PythonExceptionController(JSONController):
         raise ValueError("a value error")
 
 
+class ExceptionWithCode(ClientException):
+    http_status_code = 403
+
+
+class UnauthorizedController(JSONController):
+
+    def get(self):
+        raise ExceptionWithCode()
+
 class TestController(AsyncHTTPTestCase):
 
     def get_app(self):
@@ -60,6 +69,7 @@ class TestController(AsyncHTTPTestCase):
             (r"/exception/client", ClientExceptionController),
             (r"/exception/server", ServerExceptionController),
             (r"/exception/python", PythonExceptionController),
+            (r"/exception/403", UnauthorizedController),
         ])
         return app
 
@@ -112,6 +122,10 @@ class TestController(AsyncHTTPTestCase):
         response = self.fetch("/exception/python")
         match = b'{"reason":"a value error","status":500000}'
         assert response.body == match
+
+    def test_http_code(self):
+        response = self.fetch("/exception/403")
+        assert response.code == 403
 
     def test_allow_origin(self):
         response = self.fetch("/")

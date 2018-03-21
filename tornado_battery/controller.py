@@ -68,10 +68,11 @@ class JSONController(tornado.web.RequestHandler):
                 self.set_status(400)
             elif isinstance(exc, ServerException):
                 self.set_status(500)
+            if hasattr(exc, "http_status_code"):
+                self.set_status(exc.http_status_code)
             if hasattr(exc, "error_code"):
                 retval["status"] = exc.error_code
             else:
-                self.set_status(500)
                 retval["status"] = 500000
             if hasattr(options, 'debug') and options.debug:
                 retval['traceback'] = format_exception(exc_type, exc, trace)
