@@ -55,6 +55,12 @@ class JSONController(tornado.web.RequestHandler):
         super().set_default_headers(*args, **kwargs)
         if options.debug:
             self.set_header("Access-Control-Allow-Origin", "*")
+            self.set_header("Access-Control-Allow-Methods",
+                           "POST, GET, PUT, DELETE, OPTIONS, PATCH")
+            self.set_header("Access-Control-Max-Age", "3600")
+            self.set_header("Access-Control-Allow-Headers",
+                           "Content-Type, Access-Control-Allow-Headers")
+
 
     def write_error(self, status_code: int, **kwargs):
         if 'exc_info' in kwargs:
