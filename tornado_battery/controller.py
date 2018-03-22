@@ -67,7 +67,7 @@ class JSONController(tornado.web.RequestHandler):
 
     def get_data(self, name, default, strip=True):
         v = self.data.get(name, default)
-        if strip:
+        if strip and isinstance(v, str):
             v = v.strip()
         return v
 
