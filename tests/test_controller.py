@@ -26,6 +26,9 @@ class SimpleController(JSONController):
     async def post(self):
         return self.reply(data=self.data)
 
+    def put(self):
+        return self.reply(quote=self.get_data("quote", "no data"))
+
 
 class BailController(JSONController):
 
@@ -90,6 +93,30 @@ class TestController(AsyncHTTPTestCase):
         }
         response = self.fetch("/", method="POST", body=data, headers=headers)
         assert response.body == b'{"data":{"x":1,"y":2}}'
+
+    def test_get_data(self):
+        data = json_encode(dict(quote="hello, world"))
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.fetch("/", method="PUT", body=data, headers=headers)
+        assert response.body == b'{"quote":"hello, world"}'
+
+    def test_get_data_empty(self):
+        data = json_encode(dict(non="hello, world"))
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.fetch("/", method="PUT", body=data, headers=headers)
+        assert response.body == b'{"quote":"no data"}'
+
+    def test_get_data_strip(self):
+        data = json_encode(dict(quote="\t\r\n vvv  \r\t\n  "))
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.fetch("/", method="PUT", body=data, headers=headers)
+        assert response.body == b'{"quote":"vvv"}'
 
     def test_json_request_no_content_type(self):
         data = json_encode(dict(x=1, y=2))

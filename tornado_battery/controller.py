@@ -65,6 +65,12 @@ class JSONController(tornado.web.RequestHandler):
             self.set_header("Access-Control-Allow-Headers",
                            "Content-Type, Access-Control-Allow-Headers")
 
+    def get_data(self, name, default, strip=True):
+        v = self.data.get(name, default)
+        if strip:
+            v = v.strip()
+        return v
+
     def write_error(self, status_code: int, **kwargs):
         if 'exc_info' in kwargs:
             retval = dict()
