@@ -29,6 +29,9 @@ class SimpleController(JSONController):
     def put(self):
         return self.reply(quote=self.get_data("quote", "no data"))
 
+    def patch(self):
+        return self.reply(quote=self.get_data("quote", "no data", strip=False))
+
 
 class BailController(JSONController):
 
@@ -102,6 +105,14 @@ class TestController(AsyncHTTPTestCase):
         response = self.fetch("/", method="PUT", body=data, headers=headers)
         assert response.body == b'{"quote":"hello, world"}'
 
+    def test_get_data_num(self):
+        data = json_encode(dict(quote=1984))
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.fetch("/", method="PUT", body=data, headers=headers)
+        assert response.body == b'{"quote":1984}'
+
     def test_get_data_empty(self):
         data = json_encode(dict(non="hello, world"))
         headers = {
@@ -117,6 +128,14 @@ class TestController(AsyncHTTPTestCase):
         }
         response = self.fetch("/", method="PUT", body=data, headers=headers)
         assert response.body == b'{"quote":"vvv"}'
+
+    def test_get_data_dont_strip(self):
+        data = json_encode(dict(quote="\t\r\n vvv  \r\t\n  "))
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.fetch("/", method="PATCH", body=data, headers=headers)
+        assert response.body == b'{"quote":"\\t\\r\\n vvv  \\r\\t\\n  "}'
 
     def test_json_request_no_content_type(self):
         data = json_encode(dict(x=1, y=2))
