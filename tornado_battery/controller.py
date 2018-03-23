@@ -51,7 +51,7 @@ class JSONController(tornado.web.RequestHandler):
         self.set_status(status_code)
         self.finish(json_encode(kwargs))
 
-    def options(self):
+    def options(self, *args, **kwargs):
         if options.debug:
             self.set_header("Allow", "POST, GET, PUT, DELETE, OPTIONS, PATCH")
 
