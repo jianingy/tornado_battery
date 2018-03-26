@@ -46,8 +46,8 @@ class MysqlConnector(NamedSingletonMixin):
                          pw=self._password,
                          db=self._db)
         self._connection_string = dsn
-        self._reconnect_interval = opts[option_name(name, "reconnect-interval")]
         self._num_connections = opts[option_name(name, "num-connections")]
+        self._pool_recycle = opts[option_name(name, "pool-recycle")]
 
     async def connect(self, event_loop=None):
         self.setup_options()
@@ -56,11 +56,16 @@ class MysqlConnector(NamedSingletonMixin):
         if event_loop is None:
             event_loop = asyncio.get_event_loop()
         self._connections = await aiomysql.create_pool(
-            host=self._host, port=self._port, user=self._user,
-            password=self._password, db=self._db,
+            host=self._host,
+            port=self._port,
+            user=self._user,
+            password=self._password,
+            db=self._db,
             minsize=int(self._num_connections[0]),
             maxsize=int(self._num_connections[-1]),
-            autocommit=True, loop=event_loop, charset="utf8"
+            autocommit=True,
+            pool_recycle=self._pool_recycle,
+            loop=event_loop, charset="utf8"
         )
         return self._connections
 
@@ -78,10 +83,10 @@ def register_mysql_options(instance: str='master', default_uri: str='mysql:///')
            default=[1, 4],
            group='%s database' % instance,
            help='connection pool size for %s ' % instance)
-    define(option_name(instance, 'reconnect-interval'),
-           default=5,
+    define(option_name(instance, 'pool-recycle'),
+           default=30,
            group='%s database' % instance,
-           help='reconnect interval for %s' % instance)
+           help='pool recycle timeout for %s' % instance)
 
 
 def with_mysql(name: str):
@@ -91,6 +96,7 @@ def with_mysql(name: str):
         @functools.wraps(function)
         async def f(*args, **kwargs):
             async with MysqlConnector.instance(name).connection() as db:
+                LOG.debug("mysql connection acquired.")
                 if "db" in kwargs:
                     raise MysqlConnectorError(
                         "duplicated database argument for database %s" % name)
