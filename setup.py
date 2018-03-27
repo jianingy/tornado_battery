@@ -13,9 +13,20 @@ from setuptools import setup, find_packages
 package = 'tornado_battery'
 version = '0.5.12'
 
-setup(name=package,
-      version=version,
-      description="a set of utilities help write tornado apps quickly and easily",
-      url='https://github.com/jianingy/tornado_battery',
-      setup_requires=['pytest-runner',],
-      packages=find_packages())
+setup(
+    name=package,
+    version=version,
+    description="a set of utilities help write tornado apps quickly and easily",
+    url='https://github.com/jianingy/tornado_battery',
+    setup_requires=['pytest-runner'],
+    packages=find_packages(),
+    install_requires=[
+        'tornado',
+        'ujson',
+        'colorlog',
+        'aioredis',
+        'aiopg',
+        'aiomysql',
+        'aio-pika',
+    ],
+)
