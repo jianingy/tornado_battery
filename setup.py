@@ -28,5 +28,6 @@ setup(
         'aiopg',
         'aiomysql',
         'aio-pika',
+        'uvloop',
     ],
 )
