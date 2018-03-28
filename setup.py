@@ -11,7 +11,7 @@
 from setuptools import setup, find_packages
 
 package = 'tornado_battery'
-version = '0.5.13'
+version = '0.5.14'
 
 setup(
     name=package,
@@ -28,5 +28,6 @@ setup(
         'aiopg',
         'aiomysql',
         'aio-pika',
+        'uvloop',
     ],
 )

@@ -1,0 +1,8 @@
+tornado
+ujson
+colorlog
+aioredis
+aiopg
+aiomysql
+aio-pika
+uvloop

@@ -59,7 +59,9 @@ docs/_build/
 
 # PyBuilder
 target/
-Makefile
 
-#Jetbrains IDE
+# Jetbrains IDE
 .idea/
+
+# VirtualEnv
+venv/
