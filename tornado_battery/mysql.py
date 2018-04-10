@@ -49,7 +49,7 @@ class MysqlConnector(NamedSingletonMixin):
         self._num_connections = opts[option_name(name, "num-connections")]
         self._pool_recycle = opts[option_name(name, "pool-recycle")]
 
-    async def connect(self, event_loop=None):
+    async def connect(self, autocommit=True, event_loop=None):
         self.setup_options()
         LOG.info('connecting mysql [%s] %s' %
                  (self.name, self._connection_string))
@@ -63,7 +63,7 @@ class MysqlConnector(NamedSingletonMixin):
             db=self._db,
             minsize=int(self._num_connections[0]),
             maxsize=int(self._num_connections[-1]),
-            autocommit=True,
+            autocommit=autocommit,
             pool_recycle=self._pool_recycle,
             loop=event_loop, charset="utf8"
         )
@@ -108,5 +108,7 @@ def with_mysql(name: str):
     return wrapper
 
 
-def connect_mysql(name: str):
-    return MysqlConnector.instance(name).connect
+def connect_mysql(name: str, autocommit: bool=True):
+    async def _connect(event_loop=None):
+        return await MysqlConnector.instance(name).connect(autocommit, event_loop)
+    return _connect
