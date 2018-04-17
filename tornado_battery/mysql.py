@@ -13,6 +13,17 @@ import logging
 LOG = logging.getLogger('tornado.application')
 
 
+def query_as_dict(query: str) -> dict:
+    result = dict()
+    if not query:
+        return result
+    item_list = query.split('&')
+    for item in item_list:
+        key, value = item.split('=')
+        result[key] = value
+    return result
+
+
 class MysqlConnectorError(ServerException):
     pass
 
@@ -32,6 +43,7 @@ class MysqlConnector(NamedSingletonMixin):
         opts = options.group_dict('%s database' % name)
         uri = opts[option_name(name, "uri")]
         r = urlparse(uri)
+        q = query_as_dict(r.query)
         if r.scheme.lower() != 'mysql':
             raise MysqlConnectorError('%s is not a mysql connection scheme' % uri)
         self._host = r.hostname or 'localhost'
@@ -39,12 +51,15 @@ class MysqlConnector(NamedSingletonMixin):
         self._user = r.username
         self._password = r.password
         self._db = r.path.lstrip('/') or r.username
-        fmt = ('host={host} port={port} dbname={db} user={user} password={pw}')
+        self._charset = q.get('charset') or 'utf8mb4'
+        fmt = ('host={host} port={port} dbname={db} '
+               'user={user} password={pw} charset={charset}')
         dsn = fmt.format(host=self._host,
                          port=self._port,
                          user=self._user,
                          pw=self._password,
-                         db=self._db)
+                         db=self._db,
+                         charset=self._charset)
         self._connection_string = dsn
         self._num_connections = opts[option_name(name, "num-connections")]
         self._pool_recycle = opts[option_name(name, "pool-recycle")]
@@ -61,11 +76,12 @@ class MysqlConnector(NamedSingletonMixin):
             user=self._user,
             password=self._password,
             db=self._db,
+            charset=self._charset,
             minsize=int(self._num_connections[0]),
             maxsize=int(self._num_connections[-1]),
             autocommit=autocommit,
             pool_recycle=self._pool_recycle,
-            loop=event_loop, charset="utf8"
+            loop=event_loop,
         )
         return self._connections
 
