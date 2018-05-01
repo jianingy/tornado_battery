@@ -4,8 +4,6 @@
 #
 #    pip-compile --output-file test-requirements.txt test-requirements.in
 #
---index-url https://pypi.douban.com/simple/
-
 attrs==17.4.0             # via pytest
 coverage==4.5.1
 more-itertools==4.1.0     # via pytest
