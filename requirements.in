@@ -6,3 +6,4 @@ aiopg
 aiomysql
 aio-pika
 uvloop
+asyncio_extras
