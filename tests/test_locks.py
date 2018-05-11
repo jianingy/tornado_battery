@@ -25,14 +25,14 @@ async def redis():
     yield redis
 
 
-@with_redis(name="test")
+@with_redis(name="locks")
 async def clear(key, redis):
     await redis.execute("DEL", f'throttle_{key}')
 
 
 async def test_throttle_serial(redis):
 
-    @with_redis(name="test")
+    @with_redis(name="locks")
     async def _read(redis):
         async with throttle(redis, "TEST_LOCK_1", 2, 5) as value:
             return value
@@ -45,7 +45,7 @@ async def test_throttle_serial(redis):
 
 async def test_throttle_concurrent(redis):
 
-    @with_redis(name="test")
+    @with_redis(name="locks")
     async def _read(redis):
         async with throttle(redis, "TEST_LOCK_2", 2, 5) as value:
             return value
@@ -57,7 +57,7 @@ async def test_throttle_concurrent(redis):
 
 async def test_throttle_exceeded(redis):
 
-    @with_redis(name="test")
+    @with_redis(name="locks")
     async def _read(redis):
         async with throttle(redis, "TEST_LOCK_3", 1, 5) as value:
             return value
@@ -70,7 +70,7 @@ async def test_throttle_exceeded(redis):
 
 async def test_throttle_with_release_serial(redis):
 
-    @with_redis(name="test")
+    @with_redis(name="locks")
     async def _read(redis):
         async with throttle(redis, "TEST_LOCK_4", 1, 5, release=True) as value:
             return value
@@ -83,7 +83,7 @@ async def test_throttle_with_release_serial(redis):
 
 async def test_throttle_with_release_concurrent(redis):
 
-    @with_redis(name="test")
+    @with_redis(name="locks")
     async def _read(redis):
         async with throttle(redis, "TEST_LOCK_5", 1, 5, release=True) as value:
             return value
