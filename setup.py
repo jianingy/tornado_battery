@@ -13,21 +13,18 @@ from setuptools import setup, find_packages
 package = 'tornado_battery'
 version = '0.5.17'
 
+def parse_requirements(filename):
+    """ load requirements from a pip requirements file """
+    lineiter = (line.strip() for line in open(filename))
+    return [line for line in lineiter if line and not line.startswith("#")]
+
+
 setup(
     name=package,
     version=version,
-    description="a set of utilities help write tornado apps quickly and easily",
+    description='utilities that help write tornado apps quickly and easily',
     url='https://github.com/jianingy/tornado_battery',
     setup_requires=['pytest-runner'],
     packages=find_packages(),
-    install_requires=[
-        'tornado',
-        'ujson',
-        'colorlog',
-        'aioredis',
-        'aiopg',
-        'aiomysql',
-        'aio-pika',
-        'uvloop',
-    ],
+    install_requires=parse_requirements('requirements.txt')
 )
