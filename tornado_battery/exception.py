@@ -19,7 +19,7 @@ class GeneralException(Exception):
         if not message:
             try:
                 message = self.error_format % self.kwargs
-            except:
+            except KeyError:
                 message = ("cannot format exception message: '%s'" %
                            self.error_format)
 

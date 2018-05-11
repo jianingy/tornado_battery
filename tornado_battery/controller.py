@@ -60,10 +60,10 @@ class JSONController(tornado.web.RequestHandler):
         if options.debug:
             self.set_header("Access-Control-Allow-Origin", "*")
             self.set_header("Access-Control-Allow-Methods",
-                           "POST, GET, PUT, DELETE, OPTIONS, PATCH")
+                            "POST, GET, PUT, DELETE, OPTIONS, PATCH")
             self.set_header("Access-Control-Max-Age", "3600")
             self.set_header("Access-Control-Allow-Headers",
-                           "Content-Type, Access-Control-Allow-Headers")
+                            "Content-Type, Access-Control-Allow-Headers")
 
     def get_data(self, name, default, strip=True):
         v = self.data.get(name, default)
