@@ -16,6 +16,7 @@ import asyncio
 import functools
 import logging
 from cassandra.cluster import Cluster
+from cassandra.policies import RoundRobinPolicy
 from aiocassandra import aiosession
 
 
@@ -46,12 +47,15 @@ class CassandraConnector(NamedSingletonMixin):
         executor_threads = opts[option_name(name, 'executor-threads')]
         LOG.info('connecting cassandra [%s] %s' % (self.name, points))
 
-        # TODO
-        # Cluster.__init__ called with contact_points specified,
-        # but no load_balancing_policy. In the next major version,
-        # this will raise an error; should specify a load-balancing policy
+        # TODO 选取合适的loadbalancingpolicy
+        # Cluster.__init__ called with contact_points specified
+        # should specify a load-balancing policy
+        # http://datastax.github.io/python-driver/_modules/cassandra/cluster.html#Cluster # NOQA
+        # RoundRobinPolicy:
+        # http://datastax.github.io/python-driver/_modules/cassandra/policies.html#RoundRobinPolicy # NOQA
         cluster = Cluster(contact_points=contact_points,
-                          port=port, executor_threads=executor_threads)
+                          port=port, executor_threads=executor_threads,
+                          load_balancing_policy=RoundRobinPolicy())
         self._session = cluster.connect()
         aiosession(self._session)
 
