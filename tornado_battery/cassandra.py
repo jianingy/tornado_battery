@@ -11,7 +11,6 @@
 from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from tornado.options import define, options
-from urllib.parse import urlparse
 
 import asyncio
 import functools
