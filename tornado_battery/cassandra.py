@@ -46,6 +46,11 @@ class CassandraConnector(NamedSingletonMixin):
         port = opts[option_name(name, 'port')]
         executor_threads = opts[option_name(name, 'executor-threads')]
         LOG.info('connecting cassandra [%s] %s' % (self.name, points))
+
+        # TODO
+        # Cluster.__init__ called with contact_points specified,
+        # but no load_balancing_policy. In the next major version,
+        # this will raise an error; should specify a load-balancing policy
         cluster = Cluster(contact_points=contact_points,
                           port=port, executor_threads=executor_threads)
         self._session = cluster.connect()
