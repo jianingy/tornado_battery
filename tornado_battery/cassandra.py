@@ -38,13 +38,14 @@ class CassandraConnector(NamedSingletonMixin):
                 "no session of %s found" % self.name)
         return self._session
 
-    async def connect(self):
+    async def connect(self, load_balancing_policy=None):
         name = self.name
         opts = options.group_dict('%s cassandra' % name)
         points = opts[option_name(name, 'points')]
         contact_points = points.split(',')
         port = opts[option_name(name, 'port')]
         executor_threads = opts[option_name(name, 'executor-threads')]
+        _load_balancing_policy = load_balancing_policy or RoundRobinPolicy()
         LOG.info('connecting cassandra [%s] %s' % (self.name, points))
 
         # TODO 选取合适的loadbalancingpolicy
@@ -55,7 +56,7 @@ class CassandraConnector(NamedSingletonMixin):
         # http://datastax.github.io/python-driver/_modules/cassandra/policies.html#RoundRobinPolicy # NOQA
         cluster = Cluster(contact_points=contact_points,
                           port=port, executor_threads=executor_threads,
-                          load_balancing_policy=RoundRobinPolicy())
+                          load_balancing_policy=_load_balancing_policy)
         self._session = cluster.connect()
         aiosession(self._session)
 
