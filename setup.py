@@ -11,7 +11,7 @@
 from setuptools import setup, find_packages
 
 package = 'tornado_battery'
-version = '0.5.18'
+version = '0.5.19'
 
 def parse_requirements(filename):
     """ load requirements from a pip requirements file """
