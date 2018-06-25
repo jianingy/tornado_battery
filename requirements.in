@@ -7,3 +7,4 @@ aiomysql
 aio-pika
 uvloop
 asyncio_extras
+aiocassandra
