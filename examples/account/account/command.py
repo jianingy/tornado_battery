@@ -8,47 +8,41 @@ from tornado_battery.command import CommandMixin
 from tornado_battery.controller import JSONController
 from tornado_battery.pattern import SingletonMixin
 from tornado_battery.route import route
+from tornado_battery.cassandra import (
+    register_cassandra_options,
+    with_cassandra,
+    CassandraConnector,
+    CassandraConnectorError)
 import logging
 
 LOG = logging.getLogger("tornado.application")
 
 
-class CassandraCluster(SingletonMixin):
-
-    def __init__(self):
-        self._cluster = Cluster(executor_threads=4)
-
-    def connect(self):
-        self._session = aiosession(self._cluster.connect())
-
-    def session(self):
-        return self._session
-
-
 @route("/api/v1/user")
 class UserController(JSONController):
 
-    async def get(self):
-        session = CassandraCluster().instance().session()
-        stmt = 'SELECT * FROM tornado.users'
-        retval = await session.execute_future(stmt)
+    @with_cassandra(name='test')
+    async def get(self, cassandra):
+        query = await cassandra.prepare_future('SELECT * FROM tornado.users')
+        retval = await cassandra.execute_future(query)
         self.reply(retval=retval)
 
-    async def post(self):
+    @with_cassandra(name='test')
+    async def post(self, cassandra):
         username = self.get_data('username', None)
         mobile = self.get_data('mobile', None)
-        session = CassandraCluster().instance().session()
         stmt = 'INSERT INTO tornado.users(mobile, username) VALUES (%s, %s)'
-        retval = await session.execute_future(stmt, [mobile, username])
+        retval = await cassandra.execute_future(stmt, [mobile, username])
         self.reply(retval=retval)
 
 
 class AccountServer(CommandMixin):
 
     def setup(self):
-        CassandraCluster().instance().connect()
+        register_cassandra_options('test')
 
     def before_run(self, io_loop):
+        io_loop.run_sync(CassandraConnector.instance('test').connect)
         app = WebApplication(route.get_routes(), autoreload=options.debug)
         app.listen(8000, "0.0.0.0")
         LOG.info("server started.")
