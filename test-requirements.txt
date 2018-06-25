@@ -4,15 +4,19 @@
 #
 #    pip-compile --output-file test-requirements.txt test-requirements.in
 #
-attrs==17.4.0             # via pytest
+aiocassandra==2.0.1
+async-generator==1.9      # via aiocassandra
+atomicwrites==1.1.5       # via pytest
+attrs==18.1.0             # via pytest
+cassandra-driver==3.14.0  # via aiocassandra
 coverage==4.5.1
-more-itertools==4.1.0     # via pytest
+more-itertools==4.2.0     # via pytest
 pluggy==0.6.0             # via pytest, tox
 py==1.5.3                 # via pytest, tox
 pytest-asyncio==0.8.0
 pytest-tornado==0.5.0
-pytest==3.5.1
-six==1.11.0               # via more-itertools, pytest, tox
+pytest==3.6.2
+six==1.11.0               # via cassandra-driver, more-itertools, pytest, tox
 tornado==5.0.2            # via pytest-tornado
 tox==3.0.0
-virtualenv==15.2.0        # via tox
+virtualenv==16.0.0        # via tox
