@@ -11,6 +11,7 @@
 from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from tornado.options import define, options
+from urllib.parse import urlparse
 
 import asyncio
 import functools
@@ -21,6 +22,17 @@ from aiocassandra import aiosession
 
 
 LOG = logging.getLogger('tornado.application')
+
+
+def query_as_dict(query: str) -> dict:
+    result = dict()
+    if not query:
+        return result
+    item_list = query.split('&')
+    for item in item_list:
+        key, value = item.split('=')
+        result[key] = value
+    return result
 
 
 class CassandraConnectorError(ServerException):
@@ -41,12 +53,20 @@ class CassandraConnector(NamedSingletonMixin):
     async def connect(self, load_balancing_policy=None):
         name = self.name
         opts = options.group_dict('%s cassandra' % name)
-        points = opts[option_name(name, 'points')]
-        contact_points = points.split(',')
-        port = opts[option_name(name, 'port')]
+        uri = opts[option_name(name, "uri")]
+        r = urlparse(uri)
+        q = query_as_dict(r.query)
+        if r.scheme.lower() != 'cassandra':
+            raise CassandraConnectorError('%s is not a cassandra connection scheme' % uri)
+        self._hosts = r.hostname.split(',') if r.hostname else ['127.0.0.1']
+        self._port = r.port or 9042
+        self._keyspace = None
+        keyspace = r.path.lstrip('/')
+        if keyspace:
+            self._keyspace = keyspace
         executor_threads = opts[option_name(name, 'executor-threads')]
         _load_balancing_policy = load_balancing_policy or RoundRobinPolicy()
-        LOG.info('connecting cassandra [%s] %s' % (self.name, points))
+        LOG.info('connecting cassandra [%s] %s' % (self.name, uri))
 
         # TODO 选取合适的loadbalancingpolicy
         # Cluster.__init__ called with contact_points specified
@@ -54,10 +74,10 @@ class CassandraConnector(NamedSingletonMixin):
         # http://datastax.github.io/python-driver/_modules/cassandra/cluster.html#Cluster # NOQA
         # RoundRobinPolicy:
         # http://datastax.github.io/python-driver/_modules/cassandra/policies.html#RoundRobinPolicy # NOQA
-        cluster = Cluster(contact_points=contact_points,
-                          port=port, executor_threads=executor_threads,
+        cluster = Cluster(contact_points=self._hosts,
+                          port=self._port, executor_threads=executor_threads,
                           load_balancing_policy=_load_balancing_policy)
-        self._session = cluster.connect()
+        self._session = cluster.connect(keyspace=self._keyspace)
         aiosession(self._session)
 
 
@@ -65,18 +85,14 @@ def option_name(instance: str, option: str) -> str:
     return 'cassandra-%s-%s' % (instance, option)
 
 
-def register_cassandra_options(instance: str='default',
-                               points: str='127.0.0.1',
-                               port: int=9042,
-                               executor_threads: int=2):
-    define(option_name(instance, "points"),
-           default=points,
+def register_cassandra_options(
+        instance: str='default',
+        default_uri: str='cassandra:///',
+        executor_threads: int=2):
+    define(option_name(instance, "uri"),
+           default=default_uri,
            group='%s cassandra' % instance,
-           help='cassandra contact points for %s' % instance)
-    define(option_name(instance, 'port'),
-           default=port,
-           group='%s cassandra' % instance,
-           help='cassandra port for %s ' % instance)
+           help='cassandra contact uri %s' % instance)
     define(option_name(instance, 'executor-threads'),
            default=executor_threads,
            group='%s cassandra' % instance,

@@ -25,13 +25,13 @@ async def cassandra():
     await cassandra.connect()
     session = cassandra.connection()
     cql_keyspace_create = """
-        CREATE KEYSPACE IF NOT EXISTS TestTmp WITH
+        CREATE KEYSPACE IF NOT EXISTS testtmp WITH
         replication = {'class': 'SimpleStrategy',
         'replication_factor' : 1}
     """
     q = await session.prepare_future(cql_keyspace_create)
     await session.execute_future(q)
-    q = await session.prepare_future('USE TestTmp')
+    q = await session.prepare_future('USE testtmp')
     await session.execute_future(q)
     cql_tb_create = ('CREATE TABLE tmp_tornado_battery_test ('
                      'specid text PRIMARY KEY,'
@@ -99,6 +99,14 @@ async def test_decorator_duplicated(cassandra):
 
     with pytest.raises(CassandraConnectorError):
         await _read(cassandra=None)
+
+
+async def test_invalid_connection_scheme():
+    from tornado.options import options
+    options.cassandra_test_uri = "test://"
+    match = r" is not a cassandra connection scheme$"
+    with pytest.raises(CassandraConnectorError, match=match):
+        await CassandraConnector.instance("test").connect()
 
 
 async def test_option_name():
