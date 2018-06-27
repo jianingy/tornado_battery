@@ -8,15 +8,26 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @  8 Feb, 2018
 #
+from os.path import dirname, realpath, join as path_join
 from setuptools import setup, find_packages
 
 package = 'tornado_battery'
 version = '0.5.19'
 
+
+def valid_requirement(line):
+    if not line:
+        return False
+    else:
+        ch = line[0]
+        return ch not in ('#', '-')
+
+
 def parse_requirements(filename):
     """ load requirements from a pip requirements file """
-    lineiter = (line.strip() for line in open(filename))
-    return [line for line in lineiter if line and not line.startswith("#")]
+    root = dirname(realpath(__file__))
+    line_iter = (line.strip() for line in open(path_join(root, filename)))
+    return [line for line in line_iter if valid_requirement(line)]
 
 
 setup(
