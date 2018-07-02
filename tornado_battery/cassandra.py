@@ -18,6 +18,7 @@ import functools
 import logging
 from cassandra.cluster import Cluster
 from cassandra.policies import RoundRobinPolicy
+from cassandra.auth import PlainTextAuthProvider
 from aiocassandra import aiosession
 
 
@@ -61,12 +62,16 @@ class CassandraConnector(NamedSingletonMixin):
         self._hosts = r.hostname.split(',') if r.hostname else ['127.0.0.1']
         self._port = r.port or 9042
         self._keyspace = None
+        self._user = r.username
+        self._password = r.password
         keyspace = r.path.lstrip('/')
         if keyspace:
             self._keyspace = keyspace
         executor_threads = opts[option_name(name, 'executor-threads')]
         _load_balancing_policy = load_balancing_policy or RoundRobinPolicy()
         LOG.info('connecting cassandra [%s] %s' % (self.name, uri))
+        auth_provider = PlainTextAuthProvider(
+            username=self._user, password=self._password)
 
         # TODO 选取合适的loadbalancingpolicy
         # Cluster.__init__ called with contact_points specified
@@ -76,7 +81,8 @@ class CassandraConnector(NamedSingletonMixin):
         # http://datastax.github.io/python-driver/_modules/cassandra/policies.html#RoundRobinPolicy # NOQA
         cluster = Cluster(contact_points=self._hosts,
                           port=self._port, executor_threads=executor_threads,
-                          load_balancing_policy=_load_balancing_policy)
+                          load_balancing_policy=_load_balancing_policy,
+                          auth_provider=auth_provider)
         self._session = cluster.connect(keyspace=self._keyspace)
         aiosession(self._session)
 
