@@ -16,7 +16,8 @@ from tornado_battery.cassandra import (
 import pytest
 
 pytestmark = pytest.mark.asyncio
-register_cassandra_options("test")
+register_cassandra_options(
+    "test", default_uri='cassandra://cassandra:cassandra@127.0.0.1:9042/')
 
 
 @pytest.fixture
