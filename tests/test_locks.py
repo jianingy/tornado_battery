@@ -89,6 +89,5 @@ async def test_throttle_with_release_concurrent(redis):
             return value
 
     await clear("TEST_LOCK_5")
-    with pytest.raises(ThrottleExceeded):
-        tasks, _ = await async_wait([_read(), _read()])
-        values = list(map(lambda x: x.result(), tasks))
+    tasks, _ = await async_wait([_read(), _read()])
+    values = list(map(lambda x: x.result(), tasks))
