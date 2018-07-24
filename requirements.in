@@ -1,10 +1,4 @@
 tornado
 ujson
 colorlog
-aioredis
-aiopg
-aiomysql
-aio-pika
-uvloop
 asyncio_extras
-aiocassandra

@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file test-requirements.txt test-requirements.in
 #
+--index-url http://localhost:9595/root/pypi/+simple/
+
 aiocassandra==2.0.1
 async-generator==1.9      # via aiocassandra
 atomicwrites==1.1.5       # via pytest
@@ -11,12 +13,14 @@ attrs==18.1.0             # via pytest
 cassandra-driver==3.14.0  # via aiocassandra
 coverage==4.5.1
 more-itertools==4.2.0     # via pytest
+packaging==17.1           # via tox
 pluggy==0.6.0             # via pytest, tox
-py==1.5.3                 # via pytest, tox
+py==1.5.4                 # via pytest, tox
+pyparsing==2.2.0          # via packaging
 pytest-asyncio==0.8.0
 pytest-tornado==0.5.0
-pytest==3.6.2
-six==1.11.0               # via cassandra-driver, more-itertools, pytest, tox
-tornado==5.0.2            # via pytest-tornado
-tox==3.0.0
+pytest==3.6.3
+six==1.11.0               # via cassandra-driver, more-itertools, packaging, pytest, tox
+tornado==5.1              # via pytest-tornado
+tox==3.1.2
 virtualenv==16.0.0        # via tox

@@ -4,25 +4,9 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-aio-pika==2.9.0
-aiocassandra==2.0.1
-aiomysql==0.0.16
-aiopg==0.14.0
-aioredis==1.1.0
-async-generator==1.9      # via aiocassandra, asyncio-extras
-async-timeout==3.0.0      # via aioredis
+
+async-generator==1.9      # via asyncio-extras
 asyncio-extras==1.3.2
-cassandra-driver==3.14.0  # via aiocassandra
 colorlog==3.1.4
-hiredis==0.2.0            # via aioredis
-idna==2.7                 # via yarl
-multidict==4.3.1          # via yarl
-pika==0.10.0              # via aio-pika
-psycopg2==2.7.5           # via aiopg
-pymysql==0.8.1            # via aiomysql
-shortuuid==0.5.0          # via aio-pika
-six==1.11.0               # via cassandra-driver
-tornado==5.0.2
+tornado==5.1
 ujson==1.35
-uvloop==0.10.2
-yarl==1.2.6               # via aio-pika
