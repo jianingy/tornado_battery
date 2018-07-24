@@ -4,3 +4,6 @@ pytest-tornado
 pytest-asyncio
 coverage
 aiocassandra
+aio-pika
+aiomysql
+aioredis
