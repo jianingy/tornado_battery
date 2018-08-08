@@ -37,5 +37,5 @@ setup(
     url='https://github.com/jianingy/tornado_battery',
     setup_requires=['pytest-runner'],
     packages=find_packages(),
-    install_requires=parse_requirements('requirements.txt')
+    install_requires=parse_requirements('requirements.txt'),
 )

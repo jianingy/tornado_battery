@@ -10,34 +10,34 @@
 #
 from asyncio import wait as async_wait
 from tornado_battery.redis import register_redis_options, with_redis
-from tornado_battery.redis import RedisConnector, RedisConnectorError
+from tornado_battery.redis import RedisConnector
 from tornado_battery.locks import throttle, ThrottleExceeded
 import pytest
 
 pytestmark = pytest.mark.asyncio
-register_redis_options("locks", "redis://127.0.0.1/0")
+register_redis_options('locks', 'redis://127.0.0.1/0')
 
 
 @pytest.fixture
 async def redis():
-    redis = RedisConnector.instance("locks")
+    redis = RedisConnector.instance('locks')
     await redis.connect()
     yield redis
 
 
-@with_redis(name="locks")
+@with_redis(name='locks')
 async def clear(key, redis):
-    await redis.execute("DEL", f'throttle_{key}')
+    await redis.execute('DEL', f'throttle_{key}')
 
 
 async def test_throttle_serial(redis):
 
-    @with_redis(name="locks")
+    @with_redis(name='locks')
     async def _read(redis):
-        async with throttle(redis, "TEST_LOCK_1", 2, 5) as value:
+        async with throttle(redis, 'TEST_LOCK_1', 2, 5) as value:
             return value
 
-    await clear("TEST_LOCK_1")
+    await clear('TEST_LOCK_1')
     value = await _read()
     value = await _read()
     assert value == 2
@@ -45,37 +45,37 @@ async def test_throttle_serial(redis):
 
 async def test_throttle_concurrent(redis):
 
-    @with_redis(name="locks")
+    @with_redis(name='locks')
     async def _read(redis):
-        async with throttle(redis, "TEST_LOCK_2", 2, 5) as value:
+        async with throttle(redis, 'TEST_LOCK_2', 2, 5) as value:
             return value
 
-    await clear("TEST_LOCK_2")
+    await clear('TEST_LOCK_2')
     tasks, _ = await async_wait([_read(), _read()])
-    values = list(map(lambda x: x.result(), tasks))
+    list(map(lambda x: x.result(), tasks))
 
 
 async def test_throttle_exceeded(redis):
 
-    @with_redis(name="locks")
+    @with_redis(name='locks')
     async def _read(redis):
-        async with throttle(redis, "TEST_LOCK_3", 1, 5) as value:
+        async with throttle(redis, 'TEST_LOCK_3', 1, 5) as value:
             return value
 
-    await clear("TEST_LOCK_3")
+    await clear('TEST_LOCK_3')
     with pytest.raises(ThrottleExceeded):
         tasks, _ = await async_wait([_read(), _read()])
-        values = list(map(lambda x: x.result(), tasks))
+        list(map(lambda x: x.result(), tasks))
 
 
 async def test_throttle_with_release_serial(redis):
 
-    @with_redis(name="locks")
+    @with_redis(name='locks')
     async def _read(redis):
-        async with throttle(redis, "TEST_LOCK_4", 1, 5, release=True) as value:
+        async with throttle(redis, 'TEST_LOCK_4', 1, 5, release=True) as value:
             return value
 
-    await clear("TEST_LOCK_4")
+    await clear('TEST_LOCK_4')
     value = await _read()
     value = await _read()
     assert value == 1
@@ -83,11 +83,11 @@ async def test_throttle_with_release_serial(redis):
 
 async def test_throttle_with_release_concurrent(redis):
 
-    @with_redis(name="locks")
+    @with_redis(name='locks')
     async def _read(redis):
-        async with throttle(redis, "TEST_LOCK_5", 1, 5, release=True) as value:
+        async with throttle(redis, 'TEST_LOCK_5', 1, 5, release=True) as value:
             return value
 
-    await clear("TEST_LOCK_5")
+    await clear('TEST_LOCK_5')
     tasks, _ = await async_wait([_read(), _read()])
-    values = list(map(lambda x: x.result(), tasks))
+    list(map(lambda x: x.result(), tasks))

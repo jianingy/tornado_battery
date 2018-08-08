@@ -11,7 +11,7 @@
 
 import logging
 import threading
-LOG = logging.getLogger("tornado.application")
+LOG = logging.getLogger('tornado.application')
 
 
 class SingletonMixin:
@@ -20,13 +20,13 @@ class SingletonMixin:
 
     @classmethod
     def instance(cls):
-        if not hasattr(cls, "__instance"):
+        if not hasattr(cls, '__instance'):
             with cls.__instance_lock:
-                if not hasattr(cls, "__instance"):
-                    LOG.debug("create a new instance for '%s'" % cls)
-                    setattr(cls, "__instance", cls())
+                if not hasattr(cls, '__instance'):
+                    LOG.debug(f"create a singleton instance for '{cls}'")
+                    setattr(cls, '__instance', cls())
 
-        return getattr(cls, "__instance")
+        return getattr(cls, '__instance')
 
 
 class NamedSingletonMixin:
@@ -35,13 +35,13 @@ class NamedSingletonMixin:
 
     @classmethod
     def instance(cls, name: str):
-        if not hasattr(cls, "__instances"):
+        if not hasattr(cls, '__instances'):
             with cls.__instance_lock:
-                if not hasattr(cls, "__instances"):
-                    LOG.debug("create a instances storage for '%s'" % cls)
-                    setattr(cls, "__instances", dict())
+                if not hasattr(cls, '__instances'):
+                    LOG.debug(f"create a named singleton instance for '{cls}")
+                    setattr(cls, '__instances', dict())
 
-        instances = getattr(cls, "__instances")
+        instances = getattr(cls, '__instances')
         if name not in instances:
             with cls.__instance_lock:
                 instances[name] = cls(name=name)

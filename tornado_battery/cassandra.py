@@ -8,18 +8,18 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @ 12 Feb, 2018
 #
-from .exception import ServerException
-from .pattern import NamedSingletonMixin
+from aiocassandra import aiosession
+from cassandra.auth import PlainTextAuthProvider
+from cassandra.cluster import Cluster
+from cassandra.policies import RoundRobinPolicy
 from tornado.options import define, options
 from urllib.parse import urlparse
 
-import asyncio
 import functools
 import logging
-from cassandra.cluster import Cluster
-from cassandra.policies import RoundRobinPolicy
-from cassandra.auth import PlainTextAuthProvider
-from aiocassandra import aiosession
+
+from .exception import ServerException
+from .pattern import NamedSingletonMixin
 
 
 LOG = logging.getLogger('tornado.application')
@@ -47,18 +47,18 @@ class CassandraConnector(NamedSingletonMixin):
 
     def connection(self):
         if not hasattr(self, '_session') or not self._session:
-            raise CassandraConnectorError(
-                "no session of %s found" % self.name)
+            raise CassandraConnectorError(f'no session of {self.name} found')
         return self._session
 
     async def connect(self, load_balancing_policy=None):
         name = self.name
-        opts = options.group_dict('%s cassandra' % name)
-        uri = opts[option_name(name, "uri")]
+        opts = options.group_dict(f'{name} cassandra')
+        uri = opts[option_name(name, 'uri')]
         r = urlparse(uri)
-        q = query_as_dict(r.query)
+        query_as_dict(r.query)
         if r.scheme.lower() != 'cassandra':
-            raise CassandraConnectorError('%s is not a cassandra connection scheme' % uri)
+            raise CassandraConnectorError(
+                f'{uri} is not a cassandra connection scheme')
         self._hosts = r.hostname.split(',') if r.hostname else ['127.0.0.1']
         self._port = r.port or 9042
         self._keyspace = None
@@ -69,7 +69,7 @@ class CassandraConnector(NamedSingletonMixin):
             self._keyspace = keyspace
         executor_threads = opts[option_name(name, 'executor-threads')]
         _load_balancing_policy = load_balancing_policy or RoundRobinPolicy()
-        LOG.info('connecting cassandra [%s] %s' % (self.name, uri))
+        LOG.info(f'connecting cassandra [{self.name}] {uri}')
         auth_provider = PlainTextAuthProvider(
             username=self._user, password=self._password)
 
@@ -88,21 +88,21 @@ class CassandraConnector(NamedSingletonMixin):
 
 
 def option_name(instance: str, option: str) -> str:
-    return 'cassandra-%s-%s' % (instance, option)
+    return f'cassandra-{instance}-{option}'
 
 
 def register_cassandra_options(
         instance: str='default',
         default_uri: str='cassandra:///',
         executor_threads: int=2):
-    define(option_name(instance, "uri"),
+    define(option_name(instance, 'uri'),
            default=default_uri,
-           group='%s cassandra' % instance,
-           help='cassandra contact uri %s' % instance)
+           group=f'{instance} cassandra',
+           help=f'cassandra contact uri {instance}')
     define(option_name(instance, 'executor-threads'),
            default=executor_threads,
-           group='%s cassandra' % instance,
-           help='num of cassandra executor_threads for %s ' % instance)
+           group=f'{instance} cassandra',
+           help=f'num of cassandra executor_threads for {instance}')
 
 
 def with_cassandra(name: str):
@@ -114,7 +114,7 @@ def with_cassandra(name: str):
             cassandra = CassandraConnector.instance(name).connection()
             if 'cassandra' in kwargs:
                 raise CassandraConnectorError(
-                    'duplicated argument for cassandra %s' % name)
+                    f'duplicated argument for cassandra {name}')
             kwargs.update({'cassandra': cassandra})
             retval = await function(*args, **kwargs)
             return retval

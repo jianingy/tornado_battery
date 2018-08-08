@@ -13,11 +13,11 @@ import pytest
 
 
 class NonFormatException(GeneralException):
-    error_format = "a non-format message"
+    error_format = 'a non-format message'
 
 
 class SimpleFormatException(GeneralException):
-    error_format = "an exception: %(reason)s"
+    error_format = 'an exception: %(reason)s'
 
 
 class NoMessageException(GeneralException):
@@ -29,39 +29,32 @@ class ErrorCodeException(GeneralException):
 
 
 def test_non_format_exception():
-    match = r"^a non-format message$"
+    match = r'^a non-format message$'
     with pytest.raises(NonFormatException, match=match):
         raise NonFormatException()
 
 
 def test_format_exception():
-    match = "^an exception: something wrong$"
+    match = '^an exception: something wrong$'
     with pytest.raises(SimpleFormatException, match=match):
-        raise SimpleFormatException(reason="something wrong")
+        raise SimpleFormatException(reason='something wrong')
 
 
 def test_error_format_exception():
-    match = ("^cannot format exception message: "
-             "'an exception: %\(reason\)s'$")
+    match = ('^cannot format exception: '
+             'an exception: %\(reason\)s$')
     with pytest.raises(SimpleFormatException, match=match):
-        raise SimpleFormatException(other="something wrong")
+        raise SimpleFormatException(other='something wrong')
 
 
 def test_no_message_exception():
-    match = "application exception occurred: something wrong"
+    match = 'application exception occurred: something wrong'
     with pytest.raises(NoMessageException, match=match):
-        raise NoMessageException(reason="something wrong")
+        raise NoMessageException(reason='something wrong')
 
 
 def test_error_code_exception():
-    match = "application exception occurred: something wrong"
+    match = 'application exception occurred: something wrong'
     with pytest.raises(ErrorCodeException, match=match) as ei:
-        raise ErrorCodeException(reason="something wrong", error_code=4001)
-    assert ei.value.error_code == 4001
-
-
-def test_error_code_set():
-    match = "application exception occurred: something wrong"
-    with pytest.raises(NoMessageException, match=match) as ei:
-        raise NoMessageException(reason="something wrong", error_code=4002)
-    assert ei.value.error_code == 4002
+        raise ErrorCodeException(reason='something wrong')
+    assert ei.value.error_code == 40001

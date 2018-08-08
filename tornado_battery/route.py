@@ -12,9 +12,9 @@ class RouteFactory:
 
     @classmethod
     def create(cls, route_name: str):
-        route_cls = type('Route%s' % route_name.capitalize(),
+        route_cls = type(f'Route{route_name.capitalize()}',
                          (RouteManager,),
-                         {"route_name": route_name})
+                         {'route_name': route_name})
         cls._route_classes[route_name] = route_cls
         return cls._route_classes[route_name]
 
@@ -56,8 +56,8 @@ class RouteManager(object):
         return _handler
 
     @classmethod
-    def get_routes(self):
-        return self._routes
+    def get_routes(cls):
+        return cls._routes
 
 
-route = RouteFactory.create("default")
+route = RouteFactory.create('default')

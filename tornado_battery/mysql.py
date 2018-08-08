@@ -35,17 +35,18 @@ class MysqlConnector(NamedSingletonMixin):
 
     def connection(self):
         if not hasattr(self, '_connections') or not self._connections:
-            raise MysqlConnectorError("no connection of %s found" % self.name)
+            raise MysqlConnectorError(f'no connection of {self.name} found')
         return self._connections.acquire()
 
     def setup_options(self):
         name = self.name
-        opts = options.group_dict('%s database' % name)
-        uri = opts[option_name(name, "uri")]
+        opts = options.group_dict(f'{name} database')
+        uri = opts[option_name(name, 'uri')]
         r = urlparse(uri)
         q = query_as_dict(r.query)
         if r.scheme.lower() != 'mysql':
-            raise MysqlConnectorError('%s is not a mysql connection scheme' % uri)
+            raise MysqlConnectorError(
+                f'{uri} is not a mysql connection scheme')
         self._host = r.hostname or 'localhost'
         self._port = r.port or 3306
         self._user = r.username
@@ -61,13 +62,12 @@ class MysqlConnector(NamedSingletonMixin):
                          db=self._db,
                          charset=self._charset)
         self._connection_string = dsn
-        self._num_connections = opts[option_name(name, "num-connections")]
-        self._pool_recycle = opts[option_name(name, "pool-recycle")]
+        self._num_connections = opts[option_name(name, 'num-connections')]
+        self._pool_recycle = opts[option_name(name, 'pool-recycle')]
 
     async def connect(self, autocommit=True, event_loop=None):
         self.setup_options()
-        LOG.info('connecting mysql [%s] %s' %
-                 (self.name, self._connection_string))
+        LOG.info(f'connecting mysql [{self.name}] {self._connection_string}')
         if event_loop is None:
             event_loop = asyncio.get_event_loop()
         self._connections = await aiomysql.create_pool(
@@ -87,22 +87,23 @@ class MysqlConnector(NamedSingletonMixin):
 
 
 def option_name(instance: str, option: str) -> str:
-    return 'mysql-%s-%s' % (instance, option)
+    return f'mysql-{instance}-{option}'
 
 
-def register_mysql_options(instance: str='master', default_uri: str='mysql:///'):
-    define(option_name(instance, "uri"),
+def register_mysql_options(instance: str='master',
+                           default_uri: str='mysql://'):
+    define(option_name(instance, 'uri'),
            default=default_uri,
-           group='%s database' % instance,
-           help="mysql connection uri for %s" % instance)
+           group=f'{instance} database',
+           help=f'mysql connection uri for {instance}')
     define(option_name(instance, 'num-connections'), multiple=True,
            default=[1, 4],
-           group='%s database' % instance,
-           help='connection pool size for %s ' % instance)
+           group=f'{instance} database',
+           help=f'connection pool size for {instance}')
     define(option_name(instance, 'pool-recycle'),
            default=30,
-           group='%s database' % instance,
-           help='pool recycle timeout for %s' % instance)
+           group=f'{instance} database',
+           help=f'pool recycle timeout for {instance}')
 
 
 def with_mysql(name: str):
@@ -112,11 +113,11 @@ def with_mysql(name: str):
         @functools.wraps(function)
         async def f(*args, **kwargs):
             async with MysqlConnector.instance(name).connection() as db:
-                LOG.debug("mysql connection acquired.")
-                if "db" in kwargs:
+                LOG.debug('mysql connection acquired.')
+                if 'db' in kwargs:
                     raise MysqlConnectorError(
-                        "duplicated database argument for database %s" % name)
-                kwargs.update({"db": db})
+                        f'duplicated database argument for database {name}')
+                kwargs.update({'db': db})
                 retval = await function(*args, **kwargs)
                 return retval
         return f
@@ -126,5 +127,6 @@ def with_mysql(name: str):
 
 def connect_mysql(name: str, autocommit: bool=True):
     async def _connect(event_loop=None):
-        return await MysqlConnector.instance(name).connect(autocommit, event_loop)
+        return await MysqlConnector.instance(name).connect(autocommit,
+                                                           event_loop)
     return _connect

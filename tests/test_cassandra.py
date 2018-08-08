@@ -17,12 +17,12 @@ import pytest
 
 pytestmark = pytest.mark.asyncio
 register_cassandra_options(
-    "test", default_uri='cassandra://cassandra:cassandra@127.0.0.1:9042/')
+    'test', default_uri='cassandra://cassandra:cassandra@127.0.0.1:9042/')
 
 
 @pytest.fixture
 async def cassandra():
-    cassandra = CassandraConnector.instance("test")
+    cassandra = CassandraConnector.instance('test')
     await cassandra.connect()
     session = cassandra.connection()
     cql_keyspace_create = """
@@ -68,7 +68,7 @@ async def test_cql(cassandra):
 async def test_decorator(cassandra):
     now = int(time.time())
 
-    @with_cassandra(name="test")
+    @with_cassandra(name='test')
     async def _read(now, cassandra=None):
         cql = """
             INSERT INTO tmp_tornado_battery_test (specid, foo, bar)
@@ -89,7 +89,7 @@ async def test_decorator(cassandra):
 
 async def test_decorator_duplicated(cassandra):
 
-    @with_cassandra(name="test")
+    @with_cassandra(name='test')
     async def _read(cassandra):
         cql = """
             SELECT foo, bar FROM tmp_tornado_battery_test WHERE specid='test';
@@ -104,13 +104,13 @@ async def test_decorator_duplicated(cassandra):
 
 async def test_invalid_connection_scheme():
     from tornado.options import options
-    options.cassandra_test_uri = "test://"
-    match = r" is not a cassandra connection scheme$"
+    options.cassandra_test_uri = 'test://'
+    match = r' is not a cassandra connection scheme$'
     with pytest.raises(CassandraConnectorError, match=match):
-        await CassandraConnector.instance("test").connect()
+        await CassandraConnector.instance('test').connect()
 
 
 async def test_option_name():
     from tornado_battery.cassandra import option_name
 
-    assert option_name("test", "points") == "cassandra-test-points"
+    assert option_name('test', 'points') == 'cassandra-test-points'

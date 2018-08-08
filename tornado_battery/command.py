@@ -16,14 +16,14 @@ import logging.config
 import tornado
 
 
-define("debug", group="main", default=False, help="enable debug")
-define("config", help="path to config file", group='main',
+define('debug', group='main', default=False, help='enable debug')
+define('config', help='path to config file', group='main',
        callback=lambda path: parse_config_file(path, final=False))
 define('logging', default='info', group='main',
        metavar='debug|info|warn|error|none',
-       help="logging level")
-define("logging-config", default='', group='main',
-       help="path to logging config file")
+       help='logging level')
+define('logging-config', default='', group='main',
+       help='path to logging config file')
 
 
 DEFAULT_LOGGING_CONFIG = {
@@ -49,14 +49,9 @@ DEFAULT_LOGGING_CONFIG = {
         '': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True
+            'propagate': True,
         },
-        'app.biz': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False
-        },
-    }
+    },
 }
 
 

@@ -2,3 +2,9 @@ tornado
 ujson
 colorlog
 asyncio_extras
+aiocassandra
+aio-pika
+aiomysql
+aioredis
+peewee_async
+marshmallow

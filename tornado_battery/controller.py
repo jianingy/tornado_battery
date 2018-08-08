@@ -8,15 +8,22 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @  8 Feb, 2018
 #
-from .exception import GeneralException, ClientException, ServerException
 from ujson import loads as json_decode, dumps as json_encode
 from tornado.options import options
 from traceback import format_exception
+
 import tornado.web
+import warnings
+
+from .exception import GeneralException, ClientException, ServerException
+
+warnings.warn('tornado_battery.controller is deprecated and'
+              ' it will be removed in the future',
+              DeprecationWarning)
 
 
 class InvalidJSONRequestData(ClientException):
-    error_format = "Request data must be in JSON format"
+    error_format = 'Request data must be in JSON format'
     error_code = 400001
 
 
@@ -53,17 +60,17 @@ class JSONController(tornado.web.RequestHandler):
 
     def options(self, *args, **kwargs):
         if options.debug:
-            self.set_header("Allow", "POST, GET, PUT, DELETE, OPTIONS, PATCH")
+            self.set_header('Allow', 'POST, GET, PUT, DELETE, OPTIONS, PATCH')
 
     def set_default_headers(self, *args, **kwargs):
         super().set_default_headers(*args, **kwargs)
         if options.debug:
-            self.set_header("Access-Control-Allow-Origin", "*")
-            self.set_header("Access-Control-Allow-Methods",
-                            "POST, GET, PUT, DELETE, OPTIONS, PATCH")
-            self.set_header("Access-Control-Max-Age", "3600")
-            self.set_header("Access-Control-Allow-Headers",
-                            "Content-Type, Access-Control-Allow-Headers")
+            self.set_header('Access-Control-Allow-Origin', '*')
+            self.set_header('Access-Control-Allow-Methods',
+                            'POST, GET, PUT, DELETE, OPTIONS, PATCH')
+            self.set_header('Access-Control-Max-Age', '3600')
+            self.set_header('Access-Control-Allow-Headers',
+                            'Content-Type, Access-Control-Allow-Headers')
 
     def get_data(self, name, default, strip=True):
         v = self.data.get(name, default)
@@ -76,22 +83,22 @@ class JSONController(tornado.web.RequestHandler):
             retval = dict()
             exc_type, exc, trace = kwargs['exc_info']
             if isinstance(exc, GeneralException):
-                retval["reason"] = exc.message
+                retval['reason'] = exc.message
             else:
-                retval["reason"] = str(exc)
+                retval['reason'] = str(exc)
             if isinstance(exc, ClientException):
                 self.set_status(400)
             elif isinstance(exc, ServerException):
                 self.set_status(500)
-            if hasattr(exc, "http_status_code"):
+            if hasattr(exc, 'http_status_code'):
                 self.set_status(exc.http_status_code)
-            if hasattr(exc, "error_code"):
-                retval["status"] = exc.error_code
+            if hasattr(exc, 'error_code'):
+                retval['status'] = exc.error_code
             else:
-                retval["status"] = 500000
+                retval['status'] = 500000
             if hasattr(options, 'debug') and options.debug:
                 retval['traceback'] = format_exception(exc_type, exc, trace)
             self.reply(**retval)
         else:
             self.set_status(status_code)
-            self.reply(reason="no detail information")
+            self.reply(reason='no detail information')

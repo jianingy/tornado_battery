@@ -34,14 +34,14 @@ class QueueConnector(NamedSingletonMixin):
         if event_loop is None:
             event_loop = asyncio.get_event_loop()
         name = self.name
-        opts = options.group_dict('%s queue' % name)
-        uri = opts[option_name(name, "uri")]
-        LOG.info('connecting amqp [%s] %s' % (self.name, uri))
+        opts = options.group_dict(f'{name} queue')
+        uri = opts[option_name(name, 'uri')]
+        LOG.info(f'connecting amqp [{self.name} {uri}')
         self._connection = await connect_robust(uri, loop=event_loop)
 
     def connection(self):
         if not hasattr(self, '_connection') or not self._connection:
-            raise QueueConnectorError("no connection of %s found" % self.name)
+            raise QueueConnectorError(f'no connection of {self.name} found')
         return self._connection
 
 
@@ -51,8 +51,8 @@ class JSONQueueError(ServerException):
 
 class JSONQueue(QueueConnector):
 
-    async def setup(self, queue: str=None, exchange: str='', routing_key: str='',
-                    durable: bool=False):
+    async def setup(self, queue: str=None, exchange: str='',
+                    routing_key: str='', durable: bool=False):
         channel = await self.connection().channel()
         exchange = await channel.declare_exchange(exchange)
         if queue:
@@ -64,16 +64,16 @@ class JSONQueue(QueueConnector):
         self.active_exchange = exchange
 
     async def publish(self, content: Any):
-        if not hasattr(self, "active_exchange"):
-            raise JSONQueueError("no active exchange set")
+        if not hasattr(self, 'active_exchange'):
+            raise JSONQueueError('no active exchange set')
 
-        message = Message(bytes(json_encode(content), "utf-8"),
-                          content_type="application/json")
+        message = Message(bytes(json_encode(content), 'utf-8'),
+                          content_type='application/json')
         await self.active_exchange.publish(message, self.routing_key)
 
     async def consume(self):
-        if not hasattr(self, "active_queue"):
-            raise JSONQueueError("no active queue set")
+        if not hasattr(self, 'active_queue'):
+            raise JSONQueueError('no active queue set')
 
         msg = await self.active_queue.get()
         if msg.content_type != 'application/json':
@@ -88,11 +88,12 @@ class JSONQueue(QueueConnector):
 
 
 def option_name(instance: str, option: str) -> str:
-    return 'queue-%s-%s' % (instance, option)
+    return f'queue-{instance}-{option}'
 
 
-def register_queue_options(instance: str='master', default_uri: str='amqp:///'):
-    define(option_name(instance, "uri"),
+def register_queue_options(instance: str='master',
+                           default_uri: str='amqp://'):
+    define(option_name(instance, 'uri'),
            default=default_uri,
-           group='%s queue' % instance,
-           help="queue connection uri for %s" % instance)
+           group=f'{instance} queue',
+           help=f'queue connection uri for {instance}')
