@@ -26,6 +26,7 @@ peewee==2.10.2            # via peewee-async
 psycopg2-binary==2.7.5
 psycopg2==2.7.5           # via aiopg
 pycparser==2.18           # via cffi
+pycrypto==2.6.1
 pymysql==0.9.2            # via aiomysql
 shortuuid==0.5.0          # via aio-pika
 six==1.11.0               # via cassandra-driver, cryptography
