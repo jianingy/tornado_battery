@@ -73,6 +73,20 @@ class TestSchema(AsyncHTTPTestCase):
                               headers=headers)
         assert response.code == 200
 
+    def test_json_schema_without_header(self):
+        data = json_encode(dict(name='john', age=20))
+        response = self.fetch('/json', method='POST', body=data,
+                              raise_error=False)
+        assert response.code == 500
+
+    def test_json_schema_invalid_json(self):
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        response = self.fetch('/json', method='POST', body='{a:1}',
+                              headers=headers, raise_error=False)
+        assert response.code == 500
+
     def test_form_schema(self):
         data = 'name=john&age=20'
         response = self.fetch('/form', method='POST', body=data)

@@ -7,6 +7,7 @@
 aio-pika==3.0.1
 aiocassandra==2.0.1
 aiomysql==0.0.19
+aiopg==0.14.0
 aioredis==1.1.0
 asn1crypto==0.24.0        # via cryptography
 async-generator==1.10     # via aiocassandra, asyncio-extras
@@ -40,6 +41,8 @@ peewee-async==0.5.12
 peewee==2.10.2            # via peewee-async
 pep8-naming==0.7.0
 pluggy==0.7.1             # via pytest, tox
+psycopg2-binary==2.7.5
+psycopg2==2.7.5           # via aiopg
 py==1.5.4                 # via pytest, tox
 pycodestyle==2.3.1        # via flake8
 pycparser==2.18           # via cffi
