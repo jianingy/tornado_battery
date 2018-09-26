@@ -30,6 +30,8 @@ async def db():
     repl = Replications.instance()
     repl.add('master', 'postgres://test:test@127.0.0.1/test')
     repl.add('slave', 'postgres://test:test@127.0.0.1/test')
+    with pytest.raises(NotImplementedError, match='only support postgresql'):
+        repl.add('error', 'mysql://test:test@127.0.0.1/test')
     man = ReplicationManager.instance()
     man.initialize()
 

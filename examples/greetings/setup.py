@@ -18,6 +18,6 @@ setup(name=package,
       description="a simple greeting api",
       url='https://github.com/jianingy/tornado_battery',
       entry_points={
-          'console_scripts': ['greeting-server=greetings.command:start_server'],
+          'console_scripts': ['greeting-server=greetings.entry:start'],
       },
       install_requires=['tornado_battery'])

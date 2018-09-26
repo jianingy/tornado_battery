@@ -10,20 +10,23 @@
 #
 import time
 from tornado_battery.cassandra import (
-    register_cassandra_options, with_cassandra)
+    register_cassandra_options, with_cassandra, connect_cassandra)
 from tornado_battery.cassandra import (
     CassandraConnector, CassandraConnectorError)
 import pytest
 
 pytestmark = pytest.mark.asyncio
 register_cassandra_options(
-    'test', default_uri='cassandra://cassandra:cassandra@127.0.0.1:9042/')
+    'test',
+    default_uri='cassandra://cassandra:cassandra@127.0.0.1:9042/system'
+    '?charset=utf8')
 
 
 @pytest.fixture
 async def cassandra():
     cassandra = CassandraConnector.instance('test')
-    await cassandra.connect()
+    connect = connect_cassandra('test')
+    await connect()
     session = cassandra.connection()
     cql_keyspace_create = """
         CREATE KEYSPACE IF NOT EXISTS testtmp WITH
@@ -114,3 +117,8 @@ async def test_option_name():
     from tornado_battery.cassandra import option_name
 
     assert option_name('test', 'points') == 'cassandra-test-points'
+
+
+async def test_no_session_connector():
+    with pytest.raises(CassandraConnectorError):
+        CassandraConnector.instance('nosession').connection()

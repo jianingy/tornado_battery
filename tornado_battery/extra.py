@@ -15,12 +15,10 @@ from typing import Any, Dict
 class CORSHandlerMixin:
 
     def options(self, *args, **kwargs):
-        super().options(*args, **kwargs)
         if options.debug:
             self.set_header('Allow', 'POST, GET, PUT, DELETE, OPTIONS, PATCH')
 
     def set_default_headers(self):
-        super().set_default_headers()
         if options.debug:
             self.set_header('Access-Control-Allow-Origin', '*')
             self.set_header('Access-Control-Allow-Methods',

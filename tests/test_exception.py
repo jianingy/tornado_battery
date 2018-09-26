@@ -13,15 +13,17 @@ import pytest
 
 
 class NonFormatException(GeneralException):
+    error_code = 50001
     error_format = 'a non-format message'
 
 
 class SimpleFormatException(GeneralException):
+    error_code = 50002
     error_format = 'an exception: %(reason)s'
 
 
 class NoMessageException(GeneralException):
-    pass
+    error_code = 50003
 
 
 class ErrorCodeException(GeneralException):
@@ -58,3 +60,12 @@ def test_error_code_exception():
     with pytest.raises(ErrorCodeException, match=match) as ei:
         raise ErrorCodeException(reason='something wrong')
     assert ei.value.error_code == 40001
+
+
+def test_duplicate_error_code():
+
+    class ErrorA(GeneralException):
+        error_code = 401001
+
+    class ErrorB(GeneralException):
+        error_code = 401001

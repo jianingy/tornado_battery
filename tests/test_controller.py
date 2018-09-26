@@ -8,15 +8,13 @@
 # +--+--+--+--+--+--+--+--+--+--+--+--+--+
 #               Jianing Yang @ 16 Feb, 2018
 #
-from tornado.options import options, define
+from tornado.options import options
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application as WebApplication
 from tornado_battery.controller import JSONController
 from tornado_battery.exception import ClientException, ServerException
 from ujson import dumps as json_encode
 from unittest import mock
-
-define('debug', group='main', default=False, help='enable debug')
 
 
 class SimpleController(JSONController):

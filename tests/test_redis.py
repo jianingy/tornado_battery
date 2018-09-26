@@ -18,8 +18,10 @@ register_redis_options('test', 'redis://127.0.0.1/0')
 
 @pytest.fixture
 async def redis():
+    from tornado_battery.redis import connect_redis
     redis = RedisConnector.instance('test')
-    await redis.connect()
+    connect = connect_redis('test')
+    await connect()
     return redis
 
 

@@ -62,7 +62,7 @@ class PostgresConnector(NamedSingletonMixin):
     async def connect(self, event_loop=None):
         self.setup_options()
         LOG.info(f'connecting postgresql [{self.name}] '
-                 '{self._connection_string}')
+                 f'{self._connection_string}')
         if event_loop is None:
             event_loop = asyncio.get_event_loop()
         self._connections = await aiopg.create_pool(

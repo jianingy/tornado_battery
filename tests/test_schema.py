@@ -11,6 +11,7 @@ class User(Schema):
 
     name = fields.String(required=True)
     age = fields.Integer(required=True)
+    alias = fields.Nested(fields.String, loads_from='alias[]')
 
 
 user_schema = User(strict=True)
@@ -53,11 +54,19 @@ class ReplySchemaHandler(RequestHandler):
         return dict(data=dict(name='john', age=20))
 
 
+class ReplySchemaCustomHandler(RequestHandler):
+
+    @schema(reply=True)
+    async def get(self):
+        return dict(name='john', age=20)
+
+
 class TestSchema(AsyncHTTPTestCase):
 
     def get_app(self):
         app = WebApplication([
             (r'/', ReplySchemaHandler),
+            (r'/custom', ReplySchemaCustomHandler),
             (r'/json', JSONSchemaHandler),
             (r'/form', FormSchemaHandler),
             (r'/query', QuerySchemaHandler),
@@ -88,12 +97,12 @@ class TestSchema(AsyncHTTPTestCase):
         assert response.code == 500
 
     def test_form_schema(self):
-        data = 'name=john&age=20'
+        data = 'name=john&age=20&alias[]=jj&alias[]=kk'
         response = self.fetch('/form', method='POST', body=data)
         assert response.code == 200
 
     def test_query_schema(self):
-        data = 'name=john&age=20'
+        data = 'name=john&age=20&alias[]=jj&alias[]=kk'
         response = self.fetch(f'/query?{data}', method='GET')
         assert response.code == 200
 
@@ -102,6 +111,15 @@ class TestSchema(AsyncHTTPTestCase):
         expect = (
             b'{"code": 0, "msg": "", "data": {"age": 20, "name": "john"}}',
             b'{"code": 0, "msg": "", "data": {"name": "john", "age": 20}}',
+        )
+        assert response.code == 200
+        assert response.body in expect
+
+    def test_reply_schema_custom(self):
+        response = self.fetch(f'/custom', method='GET')
+        expect = (
+            b'{"age": 20, "name": "john"}',
+            b'{"name": "john", "age": 20}',
         )
         assert response.code == 200
         assert response.body in expect

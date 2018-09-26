@@ -15,15 +15,19 @@ import pytest
 import logging
 
 pytestmark = pytest.mark.asyncio
-register_mysql_options('test', 'mysql://root@127.0.0.1:3306/test')
+register_mysql_options('test',
+                       'mysql://root@127.0.0.1:3306/test?charset=utf8mb4')
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger('test_mysql')
 
 
 @pytest.fixture
 async def mysql():
+    from tornado_battery.mysql import connect_mysql
     db = MysqlConnector.instance('test')
-    await db.connect()
+    connect = connect_mysql('test')
+    await connect()
+
     LOG.info('connect success!')
 
     @with_mysql(name='test')

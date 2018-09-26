@@ -30,6 +30,12 @@ async def clear(key, redis):
     await redis.execute('DEL', f'throttle_{key}')
 
 
+@with_redis(name='locks')
+async def get_lock_value(key, redis):
+    value = await redis.execute('GET', f'throttle_{key}')
+    return value
+
+
 async def test_throttle_serial(redis):
 
     @with_redis(name='locks')
@@ -91,3 +97,18 @@ async def test_throttle_with_release_concurrent(redis):
     await clear('TEST_LOCK_5')
     tasks, _ = await async_wait([_read(), _read()])
     list(map(lambda x: x.result(), tasks))
+
+
+async def test_throttle_with_release_by_exception(redis):
+
+    @with_redis(name='locks')
+    async def _read(redis):
+        async with throttle(redis, 'TEST_LOCK_6', 1, 5, release=True) as value:
+            assert (await get_lock_value('TEST_LOCK_6')) == '1'
+            raise RuntimeError('runtime error')
+            return value
+
+    await clear('TEST_LOCK_6')
+    with pytest.raises(RuntimeError):
+        await _read()
+    assert (await get_lock_value('TEST_LOCK_6')) == '0'

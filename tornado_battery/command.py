@@ -14,7 +14,11 @@ from tornado.options import parse_config_file
 import logging
 import logging.config
 import tornado
+import warnings
 
+warnings.warn('tornado_battery.command is deprecated and'
+              ' it will be removed in the future',
+              DeprecationWarning)
 
 define('debug', group='main', default=False, help='enable debug')
 define('config', help='path to config file', group='main',

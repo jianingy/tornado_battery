@@ -67,5 +67,7 @@ def decode(token, secret=None):
             return json_decode(json_data)
         else:
             raise InvalidSecureTokenSignatureError()
+    except InvalidSecureTokenSignatureError:
+        raise
     except Exception as e:
         raise InvalidSecureTokenError() from e

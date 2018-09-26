@@ -18,8 +18,10 @@ register_postgres_options('test', 'postgres://test:test@127.0.0.1/test')
 
 @pytest.fixture
 async def postgres():
+    from tornado_battery.postgres import connect_postgres
     db = PostgresConnector.instance('test')
-    await db.connect()
+    connect = connect_postgres('test')
+    await connect()
     return db
 
 

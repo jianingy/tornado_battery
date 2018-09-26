@@ -37,7 +37,7 @@ def query_as_dict(query: str) -> dict:
 
 
 class CassandraConnectorError(ServerException):
-    pass
+    error_code = 600101
 
 
 class CassandraConnector(NamedSingletonMixin):

@@ -30,3 +30,19 @@ def test_secure_invalid_token():
     match = 'Invalid Token'
     with pytest.raises(secure_token.InvalidSecureTokenError, match=match):
         secure_token.decode(token, secret)
+
+
+def test_secure_invalid_token_signature():
+
+    secret = 'hello, world'
+    raw = {
+        '中文': '测试',
+        '!@#$%^&*()-_+': '!@#$%^&*()_+',
+    }
+    token = secure_token.encode(raw, secret)
+    enc, sig = token.split('.')
+    token = enc + '.eHh4'
+    match = 'Invalid Token Signature'
+    with pytest.raises(secure_token.InvalidSecureTokenSignatureError,
+                       match=match):
+        secure_token.decode(token, secret)

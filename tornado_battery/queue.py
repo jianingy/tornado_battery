@@ -22,7 +22,7 @@ LOG = logging.getLogger('tornado.application')
 
 
 class QueueConnectorError(ServerException):
-    pass
+    error_code = 602001
 
 
 class QueueConnector(NamedSingletonMixin):
@@ -46,7 +46,7 @@ class QueueConnector(NamedSingletonMixin):
 
 
 class JSONQueueError(ServerException):
-    pass
+    error_code = 602002
 
 
 class JSONQueue(QueueConnector):
