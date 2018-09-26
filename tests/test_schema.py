@@ -1,9 +1,11 @@
 from marshmallow import Schema, fields
 
+from tornado.options import options
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application as WebApplication, RequestHandler
-from ujson import dumps as json_encode
+from ujson import dumps as json_encode, loads as json_decode
 
+from tornado_battery.exception import ServerException
 from tornado_battery.schema import schema
 
 
@@ -61,11 +63,55 @@ class ReplySchemaCustomHandler(RequestHandler):
         return dict(name='john', age=20)
 
 
+class ServerErrorHandler(RequestHandler):
+
+    @schema(reply=True, error=True)
+    async def get(self):
+        raise ServerException(reason='server error')
+
+
+def custom_error_handler(handler, exc):
+    handler.set_status(599)
+    return dict(name=str(exc))
+
+
+class CustomServerErrorHandler(RequestHandler):
+
+    @schema(reply=True, error=custom_error_handler)
+    async def get(self):
+        raise ServerException(reason='server error')
+
+
+class WildCustomServerErrorHandler(RequestHandler):
+    @schema(reply=True, error=custom_error_handler)
+    async def get(self):
+        return dict(v=1/0)
+
+
+class UnhandleServerErrorHandler(RequestHandler):
+
+    @schema(reply=True)
+    async def get(self):
+        raise ServerException(reason='server error')
+
+
+class WildUnhandleServerErrorHandler(RequestHandler):
+
+    @schema(reply=True)
+    async def get(self):
+        return dict(v=1/0)
+
+
 class TestSchema(AsyncHTTPTestCase):
 
     def get_app(self):
         app = WebApplication([
             (r'/', ReplySchemaHandler),
+            (r'/error', ServerErrorHandler),
+            (r'/error/custom', CustomServerErrorHandler),
+            (r'/error/custom/wild', WildCustomServerErrorHandler),
+            (r'/error/unhandle', UnhandleServerErrorHandler),
+            (r'/error/unhandle/wild', WildUnhandleServerErrorHandler),
             (r'/custom', ReplySchemaCustomHandler),
             (r'/json', JSONSchemaHandler),
             (r'/form', FormSchemaHandler),
@@ -123,3 +169,41 @@ class TestSchema(AsyncHTTPTestCase):
         )
         assert response.code == 200
         assert response.body in expect
+
+    def test_reply_schema_default_error(self):
+        response = self.fetch(f'/error', method='GET')
+        data = json_decode(response.body)
+        assert response.code == 500
+        assert data['msg'] == 'server error'
+        assert data['code'] == 500000
+        assert 'traceback' not in data
+
+    def test_reply_schema_default_error_with_traceback(self):
+        options.debug = True
+        response = self.fetch(f'/error', method='GET')
+        options.debug = False
+        data = json_decode(response.body)
+        assert response.code == 500
+        assert data['msg'] == 'server error'
+        assert data['code'] == 500000
+        assert 'traceback' in data
+
+    def test_reply_schema_custom_error(self):
+        response = self.fetch(f'/error/custom', method='GET')
+        data = json_decode(response.body)
+        assert response.code == 599
+        assert data['name'] == 'server error'
+
+    def test_reply_schema_custom_error_wild(self):
+        response = self.fetch(f'/error/custom/wild', method='GET')
+        data = json_decode(response.body)
+        assert response.code == 599
+        assert data['name'] == 'division by zero'
+
+    def test_reply_schema_unhandle_error(self):
+        response = self.fetch(f'/error/unhandle', method='GET')
+        assert response.code == 500
+
+    def test_reply_schema_unhandle_error_wild(self):
+        response = self.fetch(f'/error/unhandle/wild', method='GET')
+        assert response.code == 500
