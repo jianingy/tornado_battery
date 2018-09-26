@@ -45,6 +45,7 @@ def schema(query=None, form=None, json=None, reply=None):
                 kwargs.update({'form': _load_form(handler, form)})
             if json and isinstance(json, Schema):
                 kwargs.update({'json': _load_json(handler, json)})
+
             retval = await function(handler, *args, **kwargs)
 
             if reply and isinstance(reply, Schema):
@@ -55,6 +56,12 @@ def schema(query=None, form=None, json=None, reply=None):
                 return handler.finish(dict(code=retval.get('code', 0),
                                            msg=retval.get('msg', ''),
                                            data=data))
+            elif reply and isinstance(reply, bool):
+                # reply == True
+                assert isinstance(retval, dict)
+                handler.set_header('Content-Type',
+                                   'application/json; charset=UTF-8')
+                return handler.finish(retval)
 
             return retval
         return f
