@@ -12,7 +12,7 @@ from os.path import dirname, realpath, join as path_join
 from setuptools import setup, find_packages
 
 package = 'tornado_battery'
-version = '0.6.0'
+version = '0.7.0'
 
 
 def valid_requirement(line):
