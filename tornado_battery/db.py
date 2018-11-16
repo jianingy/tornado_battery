@@ -65,8 +65,10 @@ class ReplicationManager(SingletonMixin):
             mgmt_stack = []
             self.task_locals.set(self.local_key, mgmt_stack)
         mgmt_stack.append(self._mgmt[name])
-        yield self._mgmt[name]
-        return mgmt_stack.pop()
+        try:
+            yield self._mgmt[name]
+        finally:
+            mgmt_stack.pop()
 
     def get(self):
         mgmt_stack = self.task_locals.get(self.local_key, None)
