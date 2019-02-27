@@ -11,29 +11,58 @@
 from .exception import ServerException
 from .pattern import NamedSingletonMixin
 from tornado.options import define, options
+from tornado.ioloop import IOLoop
 from urllib.parse import urlparse
 
 import aioredis
 import asyncio
 import functools
 import logging
+import peewee_async
 
 LOG = logging.getLogger('tornado.application')
 
 
 class RedisConnectorError(ServerException):
-    pass
+    error_code = 500010
 
 
 class RedisConnector(NamedSingletonMixin):
 
     def __init__(self, name: str):
         self.name = name
+        self.task_locals = peewee_async.TaskLocals(loop=None)
 
-    def connection(self):
+    async def acquire(self):
         if not hasattr(self, '_connections') or not self._connections:
             raise RedisConnectorError(f'no connection of {self.name} found')
-        return self._connections.get()
+        connection = self.task_locals.get('acquired_connection', None)
+        if connection:
+            count = self.task_locals.get('acquired_count', 0)
+            self.task_locals.set('acquired_count', count + 1)
+            LOG.info(f'acquired previous connection of {self.name} '
+                     f'{id(connection)} ({count + 1})')
+        else:
+            connection = await self._connections.acquire()
+            LOG.info(f'acquired new connection of {self.name} '
+                     f'{id(connection)}(1)')
+            self.task_locals.set('acquired_count', 1)
+            self.task_locals.set('acquired_connection', connection)
+        return connection
+
+    def release(self):
+        count = self.task_locals.get('acquired_count', 0) - 1
+        if count < 0:
+            raise RedisConnectorError(f'no connection of {self.name}'
+                                      ' to release')
+        self.task_locals.set('acquired_count', count)
+        if count > 0:
+            return
+        connection = self.task_locals.get('acquired_connection', None)
+        LOG.info(f'release connection {id(connection)}')
+        self._connections.release(connection)
+
+        self.task_locals.set('acquired_connection', None)
 
     async def connect(self, event_loop=None):
         name = self.name
@@ -60,8 +89,8 @@ def option_name(instance: str, option: str) -> str:
     return f'redis-{instance}-{option}'
 
 
-def register_redis_options(instance: str='master',
-                           default_uri: str='redis://'):
+def register_redis_options(instance: str = 'master',
+                           default_uri: str = 'redis://'):
     define(option_name(instance, 'uri'),
            default=default_uri,
            group=f'{instance} redis',
@@ -78,13 +107,18 @@ def with_redis(name: str):
 
         @functools.wraps(function)
         async def f(*args, **kwargs):
-            async with RedisConnector.instance(name).connection() as redis:
-                if 'redis' in kwargs:
-                    raise RedisConnectorError(
-                        f'duplicated database argument for redis {name}')
-                kwargs.update({'redis': aioredis.Redis(redis)})
+            if 'redis' in kwargs:
+                raise RedisConnectorError(
+                    f'duplicated database argument for redis {name}')
+            connector = RedisConnector.instance(name)
+            connection = await connector.acquire()
+            redis = aioredis.Redis(connection)
+            kwargs.update({'redis': redis})
+            try:
                 retval = await function(*args, **kwargs)
                 return retval
+            finally:
+                connector.release()
         return f
 
     return wrapper

@@ -25,19 +25,24 @@ async def redis():
     return redis
 
 
+@pytest.mark.asyncio
 async def test_set_command(redis):
-    async with redis.connection() as db:
-        value = await db.execute('set', 'redis_value', '1984')
+    db = await redis.acquire()
+    value = await db.execute('set', 'redis_value', '1984')
+    redis.release()
     assert value == 'OK'
 
 
+@pytest.mark.asyncio
 async def test_get_command(redis):
-    async with redis.connection() as db:
-        await db.execute('set', 'redis_value', '1984')
-        value = await db.execute('get', 'redis_value')
+    db = await redis.acquire()
+    await db.execute('set', 'redis_value', '1984')
+    value = await db.execute('get', 'redis_value')
+    redis.release()
     assert value == '1984'
 
 
+@pytest.mark.asyncio
 async def test_decorator(redis):
 
     @with_redis(name='test')
@@ -47,6 +52,7 @@ async def test_decorator(redis):
     assert (await _read()) == 'OK'
 
 
+@pytest.mark.asyncio
 async def test_decorator_duplicated(redis):
 
     @with_redis(name='test')
@@ -57,12 +63,21 @@ async def test_decorator_duplicated(redis):
         await _read(redis=None)
 
 
-async def test_no_connection():
+@pytest.mark.asyncio
+async def test_no_connection_to_release():
+    match = r'^no connection of norel to release$'
+    with pytest.raises(RedisConnectorError, match=match):
+        RedisConnector.instance('norel').release()
+
+
+@pytest.mark.asyncio
+async def test_not_connect():
     match = r'^no connection of noconn found$'
     with pytest.raises(RedisConnectorError, match=match):
-        RedisConnector.instance('noconn').connection()
+        await RedisConnector.instance('noconn').acquire()
 
 
+@pytest.mark.asyncio
 async def test_invalid_connection_scheme():
     from tornado.options import options
     options.redis_test_uri = 'test://'
@@ -71,6 +86,7 @@ async def test_invalid_connection_scheme():
         await RedisConnector.instance('test').connect()
 
 
+@pytest.mark.asyncio
 async def test_option_name():
     from tornado_battery.redis import option_name
 
