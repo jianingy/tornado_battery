@@ -57,7 +57,7 @@ async def throttle(redis, name, amount, expire=None, release=False):
             if release:
                 await redis.execute('DECR', redis_key)
         except Exception as e:
-            LOG.warn('throttle %s decreased due to exception', name)
+            LOG.warning('throttle %s decreased due to exception', name)
             await redis.execute('DECR', redis_key)
             raise e
     else:

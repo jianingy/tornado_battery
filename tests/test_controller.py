@@ -58,6 +58,7 @@ class PythonExceptionController(JSONController):
 
 class ExceptionWithCode(ClientException):
     http_status_code = 403
+    error_code = 403100
 
 
 class UnauthorizedController(JSONController):

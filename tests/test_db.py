@@ -36,6 +36,7 @@ async def db():
     man.initialize()
 
 
+@pytest.mark.asyncio
 async def test_orm_stack(db):
 
     orms = []
@@ -64,6 +65,7 @@ async def test_orm_stack(db):
     assert orms[2] != orms[0]
 
 
+@pytest.mark.asyncio
 async def test_orm_stack_async(db):
 
     orms = []
@@ -93,6 +95,7 @@ async def test_orm_stack_async(db):
     assert orms[0] == orms[2]
 
 
+@pytest.mark.asyncio
 async def test_orm_model(db):
 
     @use_orm('master')

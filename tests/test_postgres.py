@@ -13,7 +13,8 @@ from tornado_battery.postgres import PostgresConnector, PostgresConnectorError
 import pytest
 
 pytestmark = pytest.mark.asyncio
-register_postgres_options('test', 'postgres://test:test@127.0.0.1/test')
+register_postgres_options('test',
+                          'postgres://test:test@127.0.0.1/test')
 
 
 @pytest.fixture
@@ -25,6 +26,7 @@ async def postgres():
     return db
 
 
+@pytest.mark.asyncio
 async def test_select(postgres):
 
     @with_postgres(name='test')
@@ -37,6 +39,7 @@ async def test_select(postgres):
     assert (await _select()) == (1,)
 
 
+@pytest.mark.asyncio
 async def test_decorator_duplicated(postgres):
 
     @with_postgres(name='test')
@@ -49,12 +52,14 @@ async def test_decorator_duplicated(postgres):
         await _select(db=None)
 
 
+@pytest.mark.asyncio
 async def test_no_connection():
     match = r'^no connection of noconn found$'
     with pytest.raises(PostgresConnectorError, match=match):
         PostgresConnector.instance('noconn').connection()
 
 
+@pytest.mark.asyncio
 async def test_invalid_connection_scheme():
     from tornado.options import options
     options.postgres_test_uri = 'test://'
@@ -63,6 +68,7 @@ async def test_invalid_connection_scheme():
         await PostgresConnector.instance('test').connect()
 
 
+@pytest.mark.asyncio
 async def test_option_name():
     from tornado_battery.postgres import option_name
 

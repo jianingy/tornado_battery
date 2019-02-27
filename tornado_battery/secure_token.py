@@ -17,7 +17,7 @@ class InvalidSecureTokenError(ClientException):
 
 
 class InvalidSecureTokenSignatureError(ClientException):
-    error_code = 400001
+    error_code = 400002
     error_format = 'Invalid Token Signature'
 
 

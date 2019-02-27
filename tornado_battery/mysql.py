@@ -25,7 +25,7 @@ def query_as_dict(query: str) -> dict:
 
 
 class MysqlConnectorError(ServerException):
-    pass
+    error_code = 500020
 
 
 class MysqlConnector(NamedSingletonMixin):

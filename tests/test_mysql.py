@@ -16,7 +16,7 @@ import logging
 
 pytestmark = pytest.mark.asyncio
 register_mysql_options('test',
-                       'mysql://root@127.0.0.1:3306/test?charset=utf8mb4')
+                       'mysql://root:root@127.0.0.1:3306/test?charset=utf8mb4')
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger('test_mysql')
 
@@ -44,6 +44,7 @@ async def mysql():
     return db
 
 
+@pytest.mark.asyncio
 async def test_select(mysql):
 
     @with_mysql(name='test')
@@ -56,6 +57,7 @@ async def test_select(mysql):
     assert (await _select()) == (1,)
 
 
+@pytest.mark.asyncio
 async def test_error_transaction(mysql):
 
     @with_mysql(name='test')
@@ -79,6 +81,7 @@ async def test_error_transaction(mysql):
     assert (await _select()) is None
 
 
+@pytest.mark.asyncio
 async def test_rollback_transaction(mysql):
 
     @with_mysql(name='test')
@@ -100,6 +103,7 @@ async def test_rollback_transaction(mysql):
     assert (await _select()) is None
 
 
+@pytest.mark.asyncio
 async def test_commit_transaction(mysql):
 
     @with_mysql(name='test')
@@ -120,6 +124,7 @@ async def test_commit_transaction(mysql):
     await _insert()
 
 
+@pytest.mark.asyncio
 async def test_decorator_duplicated(mysql):
 
     @with_mysql(name='test')
@@ -132,12 +137,14 @@ async def test_decorator_duplicated(mysql):
         await _select(db=None)
 
 
+@pytest.mark.asyncio
 async def test_no_connection():
     match = r'^no connection of noconn found$'
     with pytest.raises(MysqlConnectorError, match=match):
         MysqlConnector.instance('noconn').connection()
 
 
+@pytest.mark.asyncio
 async def test_invalid_connection_scheme():
     from tornado.options import options
     options.mysql_test_uri = 'test://'
@@ -146,6 +153,7 @@ async def test_invalid_connection_scheme():
         await MysqlConnector.instance('test').connect()
 
 
+@pytest.mark.asyncio
 async def test_option_name():
     from tornado_battery.mysql import option_name
 
