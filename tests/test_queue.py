@@ -31,6 +31,7 @@ async def vanilla_queue():
     return pika
 
 
+@pytest.mark.asyncio
 async def test_publish_consume(queue):
     await queue.setup(queue='test_queue', exchange='test_exchange')
     await queue.publish(dict(value=1984))
@@ -40,22 +41,26 @@ async def test_publish_consume(queue):
     assert data == dict(value=1984)
 
 
+@pytest.mark.asyncio
 async def test_no_setup_publish(vanilla_queue):
     with pytest.raises(JSONQueueError, match='^no active exchange set$'):
         await vanilla_queue.publish(dict(value=1984))
 
 
+@pytest.mark.asyncio
 async def test_no_setup_consume(vanilla_queue):
     with pytest.raises(JSONQueueError, match='^no active queue set$'):
         await vanilla_queue.consume()
 
 
+@pytest.mark.asyncio
 async def test_no_connection():
     match = r'^no connection of noconn found$'
     with pytest.raises(QueueConnectorError, match=match):
         JSONQueue.instance('noconn').connection()
 
 
+@pytest.mark.asyncio
 async def test_option_name():
     from tornado_battery.queue import option_name
 

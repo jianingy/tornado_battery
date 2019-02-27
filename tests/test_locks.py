@@ -36,6 +36,7 @@ async def get_lock_value(key, redis):
     return value
 
 
+@pytest.mark.asyncio
 async def test_throttle_serial(redis):
 
     @with_redis(name='locks')
@@ -49,6 +50,7 @@ async def test_throttle_serial(redis):
     assert value == 2
 
 
+@pytest.mark.asyncio
 async def test_throttle_concurrent(redis):
 
     @with_redis(name='locks')
@@ -61,6 +63,7 @@ async def test_throttle_concurrent(redis):
     list(map(lambda x: x.result(), tasks))
 
 
+@pytest.mark.asyncio
 async def test_throttle_exceeded(redis):
 
     @with_redis(name='locks')
@@ -74,6 +77,7 @@ async def test_throttle_exceeded(redis):
         list(map(lambda x: x.result(), tasks))
 
 
+@pytest.mark.asyncio
 async def test_throttle_with_release_serial(redis):
 
     @with_redis(name='locks')
@@ -87,6 +91,7 @@ async def test_throttle_with_release_serial(redis):
     assert value == 1
 
 
+@pytest.mark.asyncio
 async def test_throttle_with_release_concurrent(redis):
 
     @with_redis(name='locks')
@@ -99,6 +104,7 @@ async def test_throttle_with_release_concurrent(redis):
     list(map(lambda x: x.result(), tasks))
 
 
+@pytest.mark.asyncio
 async def test_throttle_with_release_by_exception(redis):
 
     @with_redis(name='locks')

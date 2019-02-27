@@ -14,10 +14,12 @@ from tornado_battery.controller import JSONController
 from tornado_battery.route import route
 from tornado_battery.redis import register_redis_options, with_redis, connect_redis
 from tornado.options import options
+from tornado.gen import sleep as async_sleep
 from tornado.web import Application as WebApplication
+
 import logging
 
-LOG = logging.getLogger("app.biz")
+LOG = logging.getLogger("tornado.application")
 
 
 @route("/api/v1/counter")
@@ -32,13 +34,27 @@ class AddController(JSONController):
     @with_redis(name="master")
     async def post(self, redis):
         name = self.get_argument("name", "default")
-        value = await redis.execute('incr', 'counter-%s' % name)
+        await redis.execute('incr', 'counter-%s' % name)
+        value = await self.nested_redis_incr(name)
         self.reply(name=name, counter=value)
+
+    @with_redis(name="master")
+    async def nested_redis_incr(self, name, redis):
+        await redis.execute('incr', 'counter-%s' % name)
+        value = await self.nested_redis_check(name)
+        return value
+
+    @with_redis(name="slave")
+    async def nested_redis_check(self, name, redis):
+        value = await redis.execute('get', 'counter-%s' % name)
+        await async_sleep(5)
+        LOG.info(f'inner value = {value}')
+        return value
 
 
 class GreetingServer(CommandMixin):
 
-    def setup(self, io_loop):
+    def setup(self):
         register_redis_options("master", "redis://localhost/0")
         register_redis_options("slave", "redis://localhost/0")
 

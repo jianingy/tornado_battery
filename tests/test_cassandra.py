@@ -50,6 +50,7 @@ async def cassandra():
     return cassandra
 
 
+@pytest.mark.asyncio
 async def test_cql(cassandra):
     now = int(time.time())
     cql = """
@@ -68,6 +69,7 @@ async def test_cql(cassandra):
     assert(values[0][1] == now)
 
 
+@pytest.mark.asyncio
 async def test_decorator(cassandra):
     now = int(time.time())
 
@@ -90,6 +92,7 @@ async def test_decorator(cassandra):
     assert(values[0][1] == now)
 
 
+@pytest.mark.asyncio
 async def test_decorator_duplicated(cassandra):
 
     @with_cassandra(name='test')
@@ -105,6 +108,7 @@ async def test_decorator_duplicated(cassandra):
         await _read(cassandra=None)
 
 
+@pytest.mark.asyncio
 async def test_invalid_connection_scheme():
     from tornado.options import options
     options.cassandra_test_uri = 'test://'
@@ -113,12 +117,14 @@ async def test_invalid_connection_scheme():
         await CassandraConnector.instance('test').connect()
 
 
+@pytest.mark.asyncio
 async def test_option_name():
     from tornado_battery.cassandra import option_name
 
     assert option_name('test', 'points') == 'cassandra-test-points'
 
 
+@pytest.mark.asyncio
 async def test_no_session_connector():
     with pytest.raises(CassandraConnectorError):
         CassandraConnector.instance('nosession').connection()

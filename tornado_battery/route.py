@@ -30,7 +30,7 @@ class RouteManager(object):
 
     _routes = []
 
-    def __init__(self, uri: str, name: str=None, redirect: str=None):
+    def __init__(self, uri: str, name: str = None, redirect: str = None):
         self._uri = uri
         self._redirect = redirect
         self.name = name

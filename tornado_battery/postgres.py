@@ -26,7 +26,7 @@ LOG = logging.getLogger('tornado.application')
 
 
 class PostgresConnectorError(ServerException):
-    pass
+    error_code = 500030
 
 
 class PostgresConnector(NamedSingletonMixin):
