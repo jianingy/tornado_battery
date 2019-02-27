@@ -40,12 +40,12 @@ class RedisConnector(NamedSingletonMixin):
         if connection:
             count = self.task_locals.get('acquired_count', 0)
             self.task_locals.set('acquired_count', count + 1)
-            LOG.info(f'acquired previous connection of {self.name} '
-                     f'{id(connection)} ({count + 1})')
+            LOG.debug(f'acquired previous connection of {self.name} '
+                      f'{id(connection)} ({count + 1})')
         else:
             connection = await self._connections.acquire()
-            LOG.info(f'acquired new connection of {self.name} '
-                     f'{id(connection)}(1)')
+            LOG.debug(f'acquired new connection of {self.name} '
+                      f'{id(connection)}(1)')
             self.task_locals.set('acquired_count', 1)
             self.task_locals.set('acquired_connection', connection)
         return connection
@@ -59,7 +59,7 @@ class RedisConnector(NamedSingletonMixin):
         if count > 0:
             return
         connection = self.task_locals.get('acquired_connection', None)
-        LOG.info(f'release connection {id(connection)}')
+        LOG.debug(f'release connection {id(connection)}')
         self._connections.release(connection)
 
         self.task_locals.set('acquired_connection', None)
@@ -73,7 +73,7 @@ class RedisConnector(NamedSingletonMixin):
             raise RedisConnectorError(
                 f'{connection_string} is not a redis connection scheme')
         num_connections = opts[option_name(name, 'num-connections')]
-        LOG.info(f'connecting redis [{self.name}] {connection_string}')
+        LOG.debug(f'connecting redis [{self.name}] {connection_string}')
         if event_loop is None:
             event_loop = asyncio.get_event_loop()
         self._connections = await aioredis.create_pool(
